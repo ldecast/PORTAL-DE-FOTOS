@@ -1,0 +1,27 @@
+.base {
+  background-color: rgb(37, 46, 56);
+  color: rgb(255, 255, 255);
+  height: 3rem;
+  width: 100vw;
+  padding: 0 2rem;
+
+  position: fixed;
+  top: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 20px;
+
+  box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.5);
+}
+
+.base a {
+  color: rgb(255, 255, 255);
+  text-decoration: none;
+}
+
+@media (max-width: 800px) {
+  .base {
+    padding: 0 3.5rem;
+  }
+}

@@ -1,0 +1,11 @@
+.content {
+  background-color: rgb(240, 240, 240);
+  min-height: 100vh;
+  padding: 7rem 8rem;
+}
+
+@media (max-width: 800px) {
+  .content {
+    padding: 6rem 3.5rem;
+  }
+}
