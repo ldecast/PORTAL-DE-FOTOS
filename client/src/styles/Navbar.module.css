@@ -1,8 +1,9 @@
 .base {
-  background-color: rgb(37, 46, 56);
-  color: rgb(255, 255, 255);
-  height: 3rem;
-  width: 100vw;
+  background-color: #1116;
+  backdrop-filter: blur(10px);
+
+  height: 4rem;
+  width: 100%;
   padding: 0 2rem;
 
   position: fixed;
@@ -10,18 +11,21 @@
 
   display: flex;
   align-items: center;
-  gap: 20px;
-
-  box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.5);
+  justify-content: start;
+  gap: 2rem;
+  z-index: 1000;
 }
 
 .base a {
-  color: rgb(255, 255, 255);
+  color: #fff;
   text-decoration: none;
 }
 
-@media (max-width: 800px) {
-  .base {
-    padding: 0 3.5rem;
-  }
+.items  {
+  display: flex;
+  gap: 1rem;
+}
+
+.items * {
+  margin: 0;
 }
