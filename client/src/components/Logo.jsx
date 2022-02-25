@@ -4,7 +4,7 @@ import { Link } from 'wouter'
 function Logo() {
   return (
     <Text h3>
-      <Link className={css.base} to='/'>
+      <Link to='/'>
         FaunaDex
       </Link>
     </Text>
