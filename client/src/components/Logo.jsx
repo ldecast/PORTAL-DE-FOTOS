@@ -1,11 +1,13 @@
-import css from '@/styles/Logo.module.css'
+import { Text } from '@nextui-org/react'
 import { Link } from 'wouter'
 
 function Logo() {
   return (
-    <Link className={css.base} to='/'>
-      FaunaDex
-    </Link>
+    <Text h3>
+      <Link className={css.base} to='/'>
+        FaunaDex
+      </Link>
+    </Text>
   )
 }
 
