@@ -1,2 +1,8 @@
 .base {
+  height: 100%;
+  align-items: center;
+}
+
+.buttons button {
+  width: 100%;
 }
