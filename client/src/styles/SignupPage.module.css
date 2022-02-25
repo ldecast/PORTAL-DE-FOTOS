@@ -1,6 +1,6 @@
 .base {
+  align-items:center;
   height: 100%;
-  align-items: center;
 }
 
 .buttons button {

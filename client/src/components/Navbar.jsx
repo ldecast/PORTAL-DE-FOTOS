@@ -1,25 +1,39 @@
+import css from '@/styles/Navbar.module.css'
+
 import { Link } from 'wouter'
+import { Container, Grid, Text } from '@nextui-org/react'
 
 import Logo from '@/components/Logo'
-import css from '@/styles/Navbar.module.css'
 
 const links = [
   {
     name: 'Home',
     to: '/'
-  }
+  },
+  {
+    name: 'About',
+    to: '/'
+  },
+  {
+    name: 'Contact',
+    to: '/'
+  },
 ]
 
 function Navbar() {
   return (
-    <div className={css.base}>
+    <Grid className={css.base}>
       <Logo />
-      {links.map(({ name, ...link }) => (
-        <Link key={name} {...link}>
-          {name}
-        </Link>
-      ))}
-    </div>
+      <Container className={css.items}>
+        {links.map(({ name, ...link }) => (
+          <Text h6>
+            <Link key={name} {...link}>
+              {name}
+            </Link>
+          </Text>
+        ))}
+      </Container>
+    </Grid>
   )
 }
 
