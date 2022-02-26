@@ -1,0 +1,85 @@
+
+--------------------------------USUARIOS--------------------------------
+aws dynamodb create-table \
+    --table-name Users \
+    --attribute-definitions AttributeName=Username,AttributeType=S \
+    --key-schema AttributeName=Username,KeyType=HASH \
+    --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1 \
+    --tags Key=Use,Value=forUsers
+
+{
+    "TableDescription": {
+        "AttributeDefinitions": [
+            {
+                "AttributeName": "Username",
+                "AttributeType": "S"
+            }
+        ],
+        "TableName": "Users",
+        "KeySchema": [
+            {
+                "AttributeName": "Username",
+                "KeyType": "HASH"
+            }
+        ],
+        "TableStatus": "CREATING",
+        "CreationDateTime": "2022-02-26T01:42:40.301000-06:00",
+        "ProvisionedThroughput": {
+            "NumberOfDecreasesToday": 0,
+            "ReadCapacityUnits": 1,
+            "WriteCapacityUnits": 1
+        },
+        "TableSizeBytes": 0,
+        "ItemCount": 0,
+        "TableArn": "arn:aws:dynamodb:us-east-1:294223531098:table/Users",
+        "TableId": "02c8a074-c558-4876-9f03-dc78394c21d1"
+    }
+}
+
+
+----------------------------------FOTOS---------------------------------
+aws dynamodb create-table \
+    --table-name Photos \
+    --attribute-definitions AttributeName=PhotoURL,AttributeType=S \
+    AttributeName=Username,AttributeType=S \
+    --key-schema AttributeName=PhotoURL,KeyType=HASH AttributeName=Username,KeyType=RANGE \
+    --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1 \
+    --tags Key=Use,Value=forPhotos
+
+{
+    "TableDescription": {
+        "AttributeDefinitions": [
+            {
+                "AttributeName": "PhotoURL",
+                "AttributeType": "S"
+            },
+            {
+                "AttributeName": "Username",
+                "AttributeType": "S"
+            }
+        ],
+        "TableName": "Photos",
+        "KeySchema": [
+            {
+                "AttributeName": "PhotoURL",
+                "KeyType": "HASH"
+            },
+            {
+                "AttributeName": "Username",
+                "KeyType": "RANGE"
+            }
+        ],
+        "TableStatus": "CREATING",
+        "CreationDateTime": "2022-02-26T01:50:40.092000-06:00",
+        "ProvisionedThroughput": {
+            "NumberOfDecreasesToday": 0,
+            "ReadCapacityUnits": 1,
+            "WriteCapacityUnits": 1
+        },
+        "TableSizeBytes": 0,
+        "ItemCount": 0,
+        "TableArn": "arn:aws:dynamodb:us-east-1:294223531098:table/Photos",
+        "TableId": "87ed8f21-db59-4c79-a17e-d1c8e8f28129"
+    }
+}
+
