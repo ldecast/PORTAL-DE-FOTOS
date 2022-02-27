@@ -1,3 +1,6 @@
 *.pdf
 .vscode/
 *.csv
+/storage/testing
+
+storage/dynamo_python/.env
