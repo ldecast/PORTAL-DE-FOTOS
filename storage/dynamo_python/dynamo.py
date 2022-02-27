@@ -21,7 +21,7 @@ table_users = {
 
 table_photos = {
     'Name': 'Photos',
-    'Attributes': ['AlbumName', 'Username', 'PhotoURL']
+    'Attributes': ['PhotoURL', 'AlbumName', 'Username']
 }
 
 bucket_name = "practica1-G10-imagenes"
@@ -58,17 +58,28 @@ def connectBucketS3() -> bool:
 
 
 # REGISTRAR UN USUARIO
-def add_user(username: str, password: str, fullname: str, profile_photo: str) -> bool:
-    item = {
+def add_user(username: str, password: str, fullname: str, base64_photo: str, filename_photo: str) -> bool:
+    item_users = {
         'Username': {'S': username},
         'Password': {'S': password},
         'FullName': {'S': fullname}
     }
-    url = "Fotos_Perfil/"+username+"/actual.jpg"
-    b64_decode = base64.b64decode(profile_photo)
+    url = "Fotos_Perfil/"+username+"/actual/"+filename_photo
+    item_photos = {
+        'PhotoURL': {'S': url},
+        'AlbumName': {'S': "Fotos de Perfil"},
+        'Username': {'S': username}
+    }
+    b64_decode = base64.b64decode(base64_photo)
     try:
-        print("Adding user:", item)
-        client_dynamodb.put_item(TableName=table_users['Name'], Item=item)
+        print("Adding user:", item_users)
+        # Insertar usuario
+        client_dynamodb.put_item(
+            TableName=table_users['Name'], Item=item_users)
+        # Insertar ruta en Dynamo
+        client_dynamodb.put_item(
+            TableName=table_photos['Name'], Item=item_photos)
+        # Guardar la foto en bucket
         client_s3.upload_fileobj(io.BytesIO(b64_decode), bucket_name, url,
                                  ExtraArgs={'ContentType': "image"})
     except:
@@ -119,9 +130,18 @@ def get_user(__username: str) -> UserDB:
 
 
 # SUBIR FOTO A ALBUM DE USUARIO
-def uploadPhoto(username: str, albumName: str, profile_photo: str, filename: str):
-    url = "Fotos_Publicadas/"+username+"/"+albumName+"/"+filename
-    b64_decode = base64.b64decode(profile_photo)
+def uploadPhoto(username: str, albumName: str, base64_photo: str, filename_photo: str):
+    url = "Fotos_Publicadas/"+username+"/"+albumName+"/"+filename_photo
+    item_photos = {
+        'PhotoURL': {'S': url},
+        'AlbumName': {'S': albumName},
+        'Username': {'S': username}
+    }
+    b64_decode = base64.b64decode(base64_photo)
+    # Insertar ruta en Dynamo
+    client_dynamodb.put_item(
+        TableName=table_photos['Name'], Item=item_photos)
+    # Guardar la foto en bucket
     client_s3.upload_fileobj(io.BytesIO(b64_decode), bucket_name, url,
                              ExtraArgs={'ContentType': "image"})
     print("Upload Successful")
@@ -129,5 +149,5 @@ def uploadPhoto(username: str, albumName: str, profile_photo: str, filename: str
 
 if __name__ == '__main__':
     if connectDynamoDB():
-        # get_user('ldecast', '1234')
+        # get_user('ldecast')
         pass
