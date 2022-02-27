@@ -1,7 +1,9 @@
+import base64
 from objects.user import UserDB
 import boto3  # pip install boto3
 from dotenv import load_dotenv
 import os
+import io
 
 load_dotenv()
 
@@ -10,6 +12,7 @@ SECRET_ACCESS_KEY = os.getenv('SECRET_ACCESS_KEY')
 REGION_NAME = os.getenv('REGION_NAME')
 
 client_dynamodb = None
+client_s3 = None
 
 table_users = {
     'Name': 'Users',
@@ -20,6 +23,8 @@ table_photos = {
     'Name': 'Photos',
     'Attributes': ['AlbumName', 'Username', 'PhotoURL']
 }
+
+bucket_name = "practica1-G10-imagenes"
 
 
 # CONECTAR A LA BASE DE DATOS
@@ -36,17 +41,36 @@ def connectDynamoDB() -> bool:
         return True
 
 
+# CONECTAR A BUCKET S3 DE IMAGENES
+def connectBucketS3() -> bool:
+    try:
+        global client_s3
+        client_s3 = boto3.client('s3',
+                                 aws_access_key_id=ACCESS_KEY_ID,
+                                 aws_secret_access_key=SECRET_ACCESS_KEY,
+                                 region_name=REGION_NAME)
+    except:
+        print("Something went wrong connecting the S3 client")
+        return False
+    else:
+        print("S3 client connected!")
+        return True
+
+
 # REGISTRAR UN USUARIO
-def add_user(username: str, password: str, fullname: str) -> bool:
+def add_user(username: str, password: str, fullname: str, profile_photo: str) -> bool:
     item = {
         'Username': {'S': username},
         'Password': {'S': password},
         'FullName': {'S': fullname}
     }
-    # TODO agregar la foto de perfil a S3 en album default
+    url = "Fotos_Perfil/"+username+"/actual.jpg"
+    b64_decode = base64.b64decode(profile_photo)
     try:
         print("Adding user:", item)
         client_dynamodb.put_item(TableName=table_users['Name'], Item=item)
+        client_s3.upload_fileobj(io.BytesIO(b64_decode), bucket_name, url,
+                                 ExtraArgs={'ContentType': "image"})
     except:
         print("The user has not been added")
         return False
@@ -84,7 +108,6 @@ def get_user(__username: str) -> UserDB:
     fullname = user_db['Item']['FullName']['S']
     user_response = UserDB(username, password, fullname)
     # Obtener sus fotos
-    photos = client_dynamodb.get_item(TableName=table_photos['Name'], Key=key)
     photos_db = client_dynamodb.scan(
         TableName=table_photos['Name'], FilterExpression='Username=:name', ExpressionAttributeValues={":name": key['Username']})
     for photo in photos_db['Items']:
@@ -93,6 +116,15 @@ def get_user(__username: str) -> UserDB:
         user_response.addPhoto(url, albumName)
     # print(user_response)
     return user_response
+
+
+# SUBIR FOTO A ALBUM DE USUARIO
+def uploadPhoto(username: str, albumName: str, profile_photo: str, filename: str):
+    url = "Fotos_Publicadas/"+username+"/"+albumName+"/"+filename
+    b64_decode = base64.b64decode(profile_photo)
+    client_s3.upload_fileobj(io.BytesIO(b64_decode), bucket_name, url,
+                             ExtraArgs={'ContentType': "image"})
+    print("Upload Successful")
 
 
 if __name__ == '__main__':
