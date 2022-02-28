@@ -272,6 +272,47 @@ def updateUsername_URLS(old_user: UserDB, new_username: str):
         )
 
 
+# ELIMINAR UN ALBUM (No se debe poder eliminar el album de fotos de perfil)
+def deleteAlbum(username: str, albumName: str) -> bool:
+    user = get_user(username)
+    for photo in user.getPhotos():
+        if photo.getAlbumName() == albumName:
+            # Eliminar en bucket S3
+            client_s3.delete_object(
+                Bucket=bucket_name,
+                Key=photo.getUrl()
+            )
+            # Eliminar en DynamoDB
+            key = {
+                'PhotoURL': {'S': photo.getUrl()},
+                'Username': {'S': photo.getUsername()}
+            }
+            client_dynamodb.delete_item(
+                TableName=table_photos['Name'],
+                Key=key
+            )
+    return True
+
+
+# ELIMINAR UNA FOTO DEL ALBUM
+def deletePhoto(username: str, URL_photo: str) -> bool:
+    # Eliminar en bucket S3
+    client_s3.delete_object(
+        Bucket=bucket_name,
+        Key=URL_photo  # Sin la dirección 's3.amazonaws.com/practica1-G10-imagenes/'
+    )
+    # Eliminar en DynamoDB
+    key = {
+        'PhotoURL': {'S': URL_photo},
+        'Username': {'S': username}
+    }
+    client_dynamodb.delete_item(
+        TableName=table_photos['Name'],
+        Key=key
+    )
+    return True
+
+
 if __name__ == '__main__':
     if connectDynamoDB():
         # get_user('ldecast')
