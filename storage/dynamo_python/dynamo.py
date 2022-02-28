@@ -1,4 +1,5 @@
 import base64
+from objects.photo import Photo
 from objects.user import UserDB
 import boto3  # pip install boto3
 from dotenv import load_dotenv
@@ -59,6 +60,11 @@ def connectBucketS3() -> bool:
 
 # REGISTRAR UN USUARIO
 def add_user(username: str, password: str, fullname: str, base64_photo: str, filename_photo: str) -> bool:
+    # Verificar que no exista el usuario
+    if 'Item' in client_dynamodb.get_item(TableName=table_users['Name'], Key={'Username': {'S': username}}):
+        print("User already exists")
+        return False
+
     item_users = {
         'Username': {'S': username},
         'Password': {'S': password},
@@ -76,12 +82,13 @@ def add_user(username: str, password: str, fullname: str, base64_photo: str, fil
         # Insertar usuario
         client_dynamodb.put_item(
             TableName=table_users['Name'], Item=item_users)
-        # Insertar ruta en Dynamo
-        client_dynamodb.put_item(
-            TableName=table_photos['Name'], Item=item_photos)
-        # Guardar la foto en bucket
-        client_s3.upload_fileobj(io.BytesIO(b64_decode), bucket_name, url,
-                                 ExtraArgs={'ContentType': "image"})
+        if base64_photo and filename_photo:
+            # Guardar la foto en bucket S3
+            client_s3.upload_fileobj(io.BytesIO(b64_decode), bucket_name, url,
+                                     ExtraArgs={'ContentType': "image"})
+            # Insertar ruta en Dynamo
+            client_dynamodb.put_item(
+                TableName=table_photos['Name'], Item=item_photos)
     except:
         print("The user has not been added")
         return False
@@ -107,7 +114,7 @@ def login_user(username: str, password: str) -> bool:
     return False
 
 
-# OBTENER UN USUARIO
+# OBTENER TODA LA DATA DE UN USUARIO
 def get_user(__username: str) -> UserDB:
     key = {
         'Username': {'S': __username}
@@ -129,7 +136,7 @@ def get_user(__username: str) -> UserDB:
     return user_response
 
 
-# SUBIR FOTO A ALBUM DE USUARIO
+# SUBIR FOTO A ALBUM DE USUARIO (PARA CREAR UN ALBUM ES NECESARIO SUBIR UNA FOTO)
 def uploadPhoto(username: str, albumName: str, base64_photo: str, filename_photo: str):
     url = "Fotos_Publicadas/"+username+"/"+albumName+"/"+filename_photo
     item_photos = {
@@ -145,6 +152,124 @@ def uploadPhoto(username: str, albumName: str, base64_photo: str, filename_photo
     client_s3.upload_fileobj(io.BytesIO(b64_decode), bucket_name, url,
                              ExtraArgs={'ContentType': "image"})
     print("Upload Successful")
+
+
+# ACTUALIZAR LA FOTO DE PERFIL
+def updateProfilePhoto(__username: str, new_b64_profile_photo: str, new_filename_photo: str) -> bool:
+    # Obtener el usuario
+    user = get_user(__username)
+    old_photo = user.getProfilePhoto()
+    new_url_old_photo = "Fotos_Perfil/"+__username+"/"+old_photo.getFilename()
+    copy_source = {
+        'Bucket': bucket_name,
+        'Key': old_photo.getUrl()
+    }
+    # Copiar a la carpeta común
+    client_s3.copy(
+        copy_source,
+        bucket_name,
+        new_url_old_photo
+    )
+    # Eliminar la que estaba en /actual
+    client_s3.delete_object(
+        Bucket=bucket_name,
+        Key=old_photo.getUrl()
+    )
+    # Cargar la nueva en /actual
+    new_url = "Fotos_Perfil/"+__username+"/actual/"+new_filename_photo
+    item_photos = {
+        'PhotoURL': {'S': new_url},
+        'AlbumName': {'S': "Fotos de Perfil"},
+        'Username': {'S': __username}
+    }
+    b64_decode = base64.b64decode(new_b64_profile_photo)
+    # Guardar la foto en bucket
+    client_s3.upload_fileobj(io.BytesIO(b64_decode), bucket_name, new_url,
+                             ExtraArgs={'ContentType': "image"})
+    # Insertar ruta en Dynamo
+    client_dynamodb.put_item(
+        TableName=table_photos['Name'], Item=item_photos)
+    # Actualizar item antiguo en Dynamo
+    key = {
+        'PhotoURL': {'S': old_photo.getUrl()},
+        'Username': {'S': __username}
+    }
+    client_dynamodb.delete_item(
+        TableName=table_photos['Name'], Key=key)
+    # Reutilizar el item cambiando la url
+    item_photos['PhotoURL']['S'] = new_url_old_photo
+    client_dynamodb.put_item(
+        TableName=table_photos['Name'], Item=item_photos)
+    return True
+
+
+# EDITAR UN USUARIO (FULLNAME O USERNAME)
+def updateUser(__username: str, __password: str, new_username: str, new_fullname: str) -> bool:
+    key = {'Username': {'S': __username}}
+    # Obtener el usuario
+    user_db = client_dynamodb.get_item(TableName=table_users['Name'], Key=key)
+    password_db = user_db['Item']['Password']['S']
+    fullname_db = user_db['Item']['FullName']['S']
+
+    if password_db != __password:  # Ambas password deben estar en md5
+        print("The password is incorrect")
+        return False
+
+    if new_username:  # Se deben actualizar todas URLS
+        # Obtener el usuario
+        user = get_user(__username)
+        updateUsername_URLS(user, new_username)
+
+    client_dynamodb.delete_item(
+        TableName=table_users['Name'],
+        Key=key
+    )
+    add_user((new_username or __username), __password,
+             (new_fullname or fullname_db), '', '')
+
+    return True
+
+
+# ACTUALIZAR TODAS LAS RUTAS POR EL CAMBIO DE USERNAME
+def updateUsername_URLS(old_user: UserDB, new_username: str):
+    # Actualizar en el Bucket S3 #
+    for old_photo in old_user.getPhotos():
+        new_photo = Photo(
+            old_photo.getUrl(), old_photo.getAlbumName(), old_photo.getUsername()
+        )
+        new_photo.changeUsername(new_username)
+        copy_source = {
+            'Bucket': bucket_name,
+            'Key': old_photo.getUrl()
+        }
+        # Copiar a la nueva carpeta
+        client_s3.copy(
+            copy_source,
+            bucket_name,
+            new_photo.getUrl()
+        )
+        # Eliminar la que estaba en /actual
+        client_s3.delete_object(
+            Bucket=bucket_name,
+            Key=old_photo.getUrl()
+        )
+        # Insertar ruta en Dynamo
+        item_photos = {
+            'PhotoURL': {'S': new_photo.getUrl()},
+            'AlbumName': {'S': new_photo.getAlbumName()},
+            'Username': {'S': new_photo.getUsername()}
+        }
+        client_dynamodb.put_item(
+            TableName=table_photos['Name'], Item=item_photos)
+        # Eliminar ruta antigua en Dynamo
+        key = {
+            'PhotoURL': {'S': old_photo.getUrl()},
+            'Username': {'S': old_photo.getUsername()}
+        }
+        client_dynamodb.delete_item(
+            TableName=table_photos['Name'],
+            Key=key
+        )
 
 
 if __name__ == '__main__':
