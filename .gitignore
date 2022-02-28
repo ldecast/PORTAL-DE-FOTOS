@@ -5,3 +5,4 @@
 
 storage/python/.env
 storage/nodejs/.env
+pythonServer/storage/.env
