@@ -1,2 +1,7 @@
 *.pdf
-/.vscode
+.vscode/
+*.csv
+/storage/testing
+
+storage/python/.env
+storage/nodejs/.env
