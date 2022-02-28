@@ -1,3 +1,7 @@
+const crypto = require("crypto");
+const webServerConfig = require('../config/webserver.config');
+
+
 // Hola mundo 
 module.exports.holaMundo = async function (request, response, next) {
     try {
@@ -12,7 +16,7 @@ module.exports.holaMundo = async function (request, response, next) {
 }
 
 // LOGIN POST Endpoint para el inicio de sesión.
-module.exports.login = async function (request, response, next) {
+module.exports.login = async function (request, response) {
     try {
         response.status(200).json({
             mensaje: 'hola'
@@ -38,6 +42,10 @@ module.exports.getUser = async function (request, response, next) {
 //POST USER Endpoint para registrar un usuario.
 module.exports.addUser = async function (request, response, next) {
     try {
+        var prePass = request.body.data.password
+        console.log(prePass)
+        const hasher = crypto.createHmac("sha256",webServerConfig.secret)
+        console.log(hasher.update(prePass).digest("base64"))
         response.status(200).json({
             mensaje: 'hola joto'
         })

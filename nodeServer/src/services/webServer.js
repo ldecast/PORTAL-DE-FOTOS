@@ -1,5 +1,6 @@
 const http = require('http')
 const express = require('express')
+var bodyParser = require('body-parser')
 const { resolve } = require('path');
 const { reject } = require('assert');
 const webServerConfig = require('../config/webserver.config');
@@ -12,6 +13,7 @@ function init() {
     return new Promise((resolve, reject) => {
         const app = express()
         httpServer = http.createServer(app)
+        app.use(bodyParser.json())
         app.use(router)
         app.use(cors)
         httpServer.listen(webServerConfig.port)        
