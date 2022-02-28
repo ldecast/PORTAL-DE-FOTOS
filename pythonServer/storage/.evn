@@ -1,0 +1,5 @@
+# environment variables for aws keys
+
+ACCESS_KEY_ID=AKIA424KMCPMFOY7LMJA
+SECRET_ACCESS_KEY=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
+REGION_NAME=us-east-1
