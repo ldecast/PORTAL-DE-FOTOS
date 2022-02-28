@@ -3,4 +3,5 @@
 *.csv
 /storage/testing
 
-storage/dynamo_python/.env
+storage/python/.env
+storage/nodejs/.env

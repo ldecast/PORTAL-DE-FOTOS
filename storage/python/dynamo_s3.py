@@ -226,13 +226,12 @@ def updateUser(__username: str, __password: str, new_username: str, new_fullname
     )
     add_user((new_username or __username), __password,
              (new_fullname or fullname_db), '', '')
-
     return True
 
 
 # ACTUALIZAR TODAS LAS RUTAS POR EL CAMBIO DE USERNAME
 def updateUsername_URLS(old_user: UserDB, new_username: str):
-    # Actualizar en el Bucket S3 #
+    # Actualizar en el Bucket S3
     for old_photo in old_user.getPhotos():
         new_photo = Photo(
             old_photo.getUrl(), old_photo.getAlbumName(), old_photo.getUsername()
