@@ -1,13 +1,15 @@
+import css from '@/styles/App.module.css'
+
+import { Container } from '@nextui-org/react'
+import { Slide, ToastContainer } from 'react-toastify'
 import { Redirect, Route, Switch } from 'wouter'
 
 import Navbar from '@/components/Navbar'
 import HomePage from '@/pages/HomePage'
 import LoginPage from '@/pages/LoginPage'
-import css from '@/styles/App.module.css'
-import { Container } from '@nextui-org/react'
+import SignupPage from '@/pages/SignupPage'
 
 import background from '@assets/background.svg'
-import SignupPage from '@/pages/SignupPage'
 
 function App() {
   const isUserLoggedIn = false
@@ -44,6 +46,13 @@ function App() {
       className={css.base}
       style={{ backgroundImage: `url(${background})` }}
     >
+      <ToastContainer
+        autoClose={4000}
+        limit={1}
+        toastClassName={css.toast}
+        theme='dark'
+        transition={Slide}
+      />
       <Navbar />
       <Container className={css.content}>
         <Switch>
