@@ -3,6 +3,7 @@ const webServer = require("./src/services/webServer")
 async function initServer() {
     try {
         await webServer.init();
+        await webServer.Connect();
     } catch (error) {
         console.log(error)
         process.exit(1)
@@ -21,7 +22,7 @@ async function stopServer(e) {
 
 process.on('SIGTERM', () => {stopServer();})
 
-process.on('uncaughtException', () => {
+process.on('uncaughtException', (err) => {
     console.error(err);
     stopServer(err);
 })

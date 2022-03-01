@@ -1,5 +1,7 @@
-const crypto = require("crypto");
+const md5 = require('md5');
+const jwt = require('jsonwebtoken')
 const webServerConfig = require('../config/webserver.config');
+const DynamoDB = require('../services/dynamodb')
 
 
 // Hola mundo 
@@ -18,12 +20,21 @@ module.exports.holaMundo = async function (request, response, next) {
 // LOGIN POST Endpoint para el inicio de sesión.
 module.exports.login = async function (request, response) {
     try {
-        response.status(200).json({
-            mensaje: 'hola'
-        })
+        // encriptar la pass antes de comparar
+        var encriptPass = md5(request.body.data.password)
+        var user = {user: request.body.data.user}
+
+        let resultado = await DynamoDB.Login(user.user, request.body.data.password)
+        if (resultado) {
+            const token = jwt.sign(user,webServerConfig.secret,{expiresIn:10})
+            response.status(200).json({data:token,status: 200})
+            return
+        }
+        response.status(401).json({data:'Credenciales de usuario incorrectas',status: 401})
     } catch (error) {
         response.status(404).json({
-            mensaje: 'hubo pedo'
+            error: 'Ocurrio un error en el login',
+            status:404
         })
     }
 }
@@ -43,11 +54,12 @@ module.exports.getUser = async function (request, response, next) {
 module.exports.addUser = async function (request, response, next) {
     try {
         var prePass = request.body.data.password
-        console.log(prePass)
-        const hasher = crypto.createHmac("sha256",webServerConfig.secret)
-        console.log(hasher.update(prePass).digest("base64"))
+        var encriptPass = md5(prePass)
+        // verificar la existencia del usuario en la db
+        // metodo(request.body.data.user)
         response.status(200).json({
-            mensaje: 'hola joto'
+            mensaje: 'hola joto',
+            pass: encriptPass
         })
     } catch (error) {
         response.status(404).json({

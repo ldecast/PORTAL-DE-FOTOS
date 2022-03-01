@@ -5,3 +5,6 @@
 
 storage/python/.env
 storage/nodejs/.env
+
+nodeServer/node_modules
+nodeServer/.env
