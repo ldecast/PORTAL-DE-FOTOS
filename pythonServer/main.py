@@ -91,7 +91,12 @@ def selfuser():
                           app.config['SECRET_KEY'],
                           algorithms=['HS256'])
         usuario= get_user(data["user"])
-        return json.dumps(usuario.__dict__)
+        retornoAux =[]
+        for element in usuario.photos:
+            retornoAux.append(element.__dict__)
+        retorno = usuario
+        retorno.photos = retornoAux
+        return json.dumps(retorno.__dict__)
     elif request.method == 'PUT':
         rawdata = request.get_json()
         data = rawdata['data']
