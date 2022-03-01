@@ -10,3 +10,11 @@
 
   z-index: -1;
 }
+
+.toast {
+  background-color: #1116;
+  backdrop-filter: saturate(180%) blur(10px);
+
+  top: 80px;
+}
+

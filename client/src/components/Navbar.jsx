@@ -9,15 +9,7 @@ const links = [
   {
     name: 'Home',
     to: '/'
-  },
-  {
-    name: 'About',
-    to: '/'
-  },
-  {
-    name: 'Contact',
-    to: '/'
-  },
+  }
 ]
 
 function Navbar() {
@@ -26,8 +18,8 @@ function Navbar() {
       <Logo />
       <Container className={css.items}>
         {links.map(({ name, ...link }) => (
-          <Text h6>
-            <Link key={name} {...link}>
+          <Text h6 key={name}>
+            <Link {...link}>
               {name}
             </Link>
           </Text>
