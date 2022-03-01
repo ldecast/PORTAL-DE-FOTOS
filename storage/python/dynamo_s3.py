@@ -25,7 +25,7 @@ table_photos = {
     'Attributes': ['PhotoURL', 'AlbumName', 'Username']
 }
 
-bucket_name = "practica1-G10-imagenes"
+bucket_name = "practica1.g10.imagenes"
 
 
 # CONECTAR A LA BASE DE DATOS
@@ -76,7 +76,6 @@ def add_user(username: str, password: str, fullname: str, base64_photo: str, fil
         'AlbumName': {'S': "Fotos de Perfil"},
         'Username': {'S': username}
     }
-    b64_decode = base64.b64decode(base64_photo)
     try:
         print("Adding user:", item_users)
         # Insertar usuario
@@ -84,6 +83,7 @@ def add_user(username: str, password: str, fullname: str, base64_photo: str, fil
             TableName=table_users['Name'], Item=item_users)
         if base64_photo and filename_photo:
             # Guardar la foto en bucket S3
+            b64_decode = base64.b64decode(base64_photo)
             client_s3.upload_fileobj(io.BytesIO(b64_decode), bucket_name, url,
                                      ExtraArgs={'ContentType': "image"})
             # Insertar ruta en Dynamo
@@ -312,7 +312,22 @@ def deletePhoto(username: str, URL_photo: str) -> bool:
     return True
 
 
+# Con fines de testeo
+def getBase64(path: str) -> str:
+    text_file = open(path, "r")
+    data = text_file.read()
+    text_file.close()
+    return data
+
+
 if __name__ == '__main__':
-    if connectDynamoDB():
+    if connectDynamoDB() and connectBucketS3():
+        # add_user("luisd", "0000", "Luis Danniel Castellanos", getBase64('../testing/perfil1.txt'), "img1.jpg")
+        # updateUser("luisd", "0000", "ldecast", "Luis Danniel Ernesto Castellanos Galindo")
+        # uploadPhoto('ldecast', 'Pensums', getBase64('../testing/industrial.txt'), 'Industrial.jpg')
+        # updateProfilePhoto("ldecast", getBase64('../testing/perfil2.txt'), 'img2.jpg')
+        # add_user("luisd", "1234", "LuisDa", getBase64('../testing/perfil1.txt'), "hola.jpg")
+        # deleteAlbum('ldecast','Pensums')
+        # deletePhoto('ldecast','Fotos_Perfil/ldecast/img1.jpg')
         # get_user('ldecast')
         pass
