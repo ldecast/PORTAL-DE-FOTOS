@@ -1,4 +1,6 @@
+from curses import has_il
 import json
+import hashlib
 from os import getuid
 from site import addusersitepackages
 from flask import Flask, jsonify, request, make_response
@@ -51,10 +53,8 @@ def login():
         uname = data['user']
         password = data['password']
         #consulta
-        print(uname)
-        print(password)
-        print(data)
-        if login_user(uname, password):
+        finalpass = hashlib.md5(password.encode())
+        if login_user(uname, finalpass.hexdigest()):
             token = jwt.encode(
                 {
                     'user': str(uname),
@@ -74,7 +74,8 @@ def user():
         password = data['password']
         fullname = data['name']
         photo = data['photo']
-        if add_user(uname, password, fullname, photo, uname):
+        finalpass = hashlib.md5(password.encode())
+        if add_user(uname, finalpass.hexdigest(), fullname, photo, uname):
             return jsonify({'data': "success", 'status': 200})
         return jsonify({'data': 'failed at create user', 'status': 401})
     return "pagina user"
@@ -92,8 +93,17 @@ def selfuser():
         usuario= get_user(data["user"])
         return json.dumps(usuario.__dict__)
     elif request.method == 'PUT':
-        pass
-    return 'pagina user'
+        rawdata = request.get_json()
+        data = rawdata['data']
+        token = data['token']
+        newuser=data['user']
+        password = data['password']
+        fullname = data['name']
+        data = jwt.decode(token, app.config['SECRET_KEY'],algorithms=['HS256'])
+        confirm = updateUser(data['user'],password,newuser,fullname)
+        if confirm:
+            return jsonify({'data':'success', 'status':200})
+    return jsonify({'data':'error failed to get or put', 'status':401})
 
 
 @app.route("/photo")  #post

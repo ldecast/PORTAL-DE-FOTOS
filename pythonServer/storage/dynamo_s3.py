@@ -24,7 +24,7 @@ table_photos = {
     'Attributes': ['PhotoURL', 'AlbumName', 'Username']
 }
 
-bucket_name = "practica1-G10-imagenes"
+bucket_name = "imagenes.semi1"  #"practica1-G10-imagenes"
 
 
 # CONECTAR A LA BASE DE DATOS
@@ -33,9 +33,9 @@ def connectDynamoDB() -> bool:
         global client_dynamodb
         print(REGION_NAME)
         client_dynamodb = boto3.client('dynamodb',
-                                    aws_access_key_id=ACCESS_KEY_ID,
-                                    aws_secret_access_key=SECRET_ACCESS_KEY,
-                                    region_name=REGION_NAME)
+                                       aws_access_key_id=ACCESS_KEY_ID,
+                                       aws_secret_access_key=SECRET_ACCESS_KEY,
+                                       region_name=REGION_NAME)
     except:
         print("Something went wrong connecting the client")
         return None
@@ -94,7 +94,6 @@ def add_user(username: str, password: str, fullname: str, base64_photo: str,
             'S': username
         }
     }
-    b64_decode = base64.b64decode(base64_photo)
     try:
         print("Adding user:", item_users)
         # Insertar usuario
@@ -102,6 +101,7 @@ def add_user(username: str, password: str, fullname: str, base64_photo: str,
                                  Item=item_users)
         if base64_photo and filename_photo:
             # Guardar la foto en bucket S3
+            b64_decode = base64.b64decode(base64_photo)
             client_s3.upload_fileobj(io.BytesIO(b64_decode),
                                      bucket_name,
                                      url,
