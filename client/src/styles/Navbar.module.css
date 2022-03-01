@@ -1,6 +1,6 @@
 .base {
   background-color: #1116;
-  backdrop-filter: saturate(180%) blur(10px);;
+  backdrop-filter: saturate(180%) blur(10px);
 
   height: 4rem;
   width: 100%;

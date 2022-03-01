@@ -30,7 +30,6 @@
 {
   "id": number,
   "name": string,
-  "photos": Photo[],
 }
 ```
 - La foto debe ser un string en base64 del lado del cliente, y un enlace a la foto en la base de datos.

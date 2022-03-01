@@ -3,6 +3,10 @@
   height: 100%;
 }
 
-.buttons button {
+.base form button {
+  width: 100%;
+}
+
+.camera {
   width: 100%;
 }

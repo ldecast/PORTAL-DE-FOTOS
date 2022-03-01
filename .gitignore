@@ -5,6 +5,6 @@
 
 storage/python/.env
 storage/nodejs/.env
+pythonServer/storage/.env
 
-nodeServer/node_modules
-nodeServer/.env
+storage/python/objects/__pycache__/

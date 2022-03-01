@@ -8,10 +8,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@nextui-org/react": "^1.0.2-beta.4",
+    "@nextui-org/react": "1.0.2-beta.4",
+    "jotai": "1.6.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "wouter": "^2.8.0-alpha.2"
+    "react-iconly": "2.2.5",
+    "react-toastify": "8.2.0",
+    "react-webcam": "6.0.1",
+    "wouter": "2.8.0-alpha.2"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "1.2.0",
