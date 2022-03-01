@@ -14,5 +14,9 @@
     "node"
   ],
   "author": "ldecast",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.1082.0",
+    "dotenv": "^16.0.0"
+  }
 }
