@@ -6,6 +6,7 @@ router.route('/').get(controller.holaMundo)
 router.route('/login').post(controller.login)
 router.route('/user').get(controller.getUser)
 router.route('/user').post(controller.addUser)
+router.route('/user').delete(controller.deleteUser)
 //---------------------------------------------
 router.route('/user').put(controller.updateUser)
 router.route('/photo').post(controller.uploadPhoto)

@@ -11,17 +11,8 @@ function Login(user,pass) {
                     resolve(false)
                     return
                 } else {
-                    var res = false
-                    for (let i = 0; i < data.Count; i++) {
-                        const element = data.Items[i];
-                        let us = element.Username
-                        let pa = element.Password
-                        if (pa===pass && us===user) {
-                            res = true
-                            break
-                        }
-                    }
-                    resolve(res)
+                    console.log(data)
+                    resolve(true)
                 }
              })
         } catch (error) {

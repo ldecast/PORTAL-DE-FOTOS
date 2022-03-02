@@ -39,8 +39,8 @@ module.exports.add_user = function add_user(username, password, fullname, base64
         return client_dynamodb.get(
             { TableName: table_users.Name, Key: { 'Username': username } },
             (err, data) => {
-                if (err) console.log(err);
-                if (data.Item) return resolve('User already exists')
+                if (err) return resolve({data:'Error al hacer consulta dynamodb',status:400});
+                if (data.Item) return resolve({data:'User already exists',status:400})
                 // Creación de parámetros
                 const item_users = {
                     Username: username,
@@ -80,10 +80,12 @@ module.exports.add_user = function add_user(username, password, fullname, base64
                                         }
                                     });
                                 }
-                                else return resolve('Error al ingresar al bucket');
+                                else {
+                                    // borar usuario
+                                    return resolve({data:'Error al ingresar al bucket',status:400});}
                             });
                         }
-                    } else return resolve('Error al crear el usuario');
+                    } else return resolve({data:'Error al crear el usuario',status:400});
                 });
             });
         } catch (error) {
@@ -99,9 +101,8 @@ module.exports.Login = function login_user(username, password) {
         const key = { 'Username': username };
     return client_dynamodb.get({ TableName: table_users.Name, Key: key },
         function (err, user) {
-            var res = null
-            if (err) {resolve(err); return;}
-            if (!user.Item) {resolve("The user doesn't exists"); return}
+            if (err) {return resolve({data:'Error en consulta a dynamo',status:400})}
+            if (!user.Item) {return resolve({data:"The user doesn't exists",status:400})}
             password_db = user.Item.Password;
             if (password_db == password) { // Ambas password deben estar en md5
                 console.log("Login is correct");
@@ -109,8 +110,7 @@ module.exports.Login = function login_user(username, password) {
                 return;
             }
             else {
-                 resolve("The password is incorrect");
-                 returnErr
+                 return resolve({data:"The password is incorrect",status:400})
             }
         });
     })
@@ -187,6 +187,69 @@ module.exports.getUsuario = function (username) {
              })
         } catch (error) {
             console.log(error)
+            return resolve({data:'Ocurrio un error al obtener el usuario',status:400})
+        }
+    })
+}
+
+module.exports.updateUser = function (pastUser,username,pass,fullname) {
+    return new Promise((resolve,reject)=> {
+        try {
+            return client_dynamodb.get(
+                { TableName: table_users.Name, Key: { 'Username': pastUser } },
+                (err, data) => {
+                    if (err) return resolve({data:'Error al hacer consulta dynamodb',status:400})
+                    if (!data.Item) return resolve({data:'No existe el usuario',status:400})
+                    // Creación de parámetros
+                    const item_users = {
+                        Username: username,
+                        Password: pass,
+                        FullName: fullname
+                    }
+                    //return resolve(true)
+                    //Insertar usuario
+                    return client_dynamodb.put({
+                        TableName: table_users.Name, Item: item_users
+                    }, function (err) {
+                        if (!err) {
+                            return resolve(true)
+                        } else return resolve({data:'Error al actualizar el usuario',status:400});
+                    });
+                });
+        } catch (error) {
+            console.log(error)
+            return resolve({data:'Ocurrio un error al obtener el usuario',status:400})
+        }
+    })
+}
+
+module.exports.deleteUser = function (username,pass) {
+    return new Promise((resolve,reject)=> {
+        try {
+            client_dynamodb.get({TableName: table_users.Name, Key: {"Username":username}}, function(err,data){
+                if (err) {return resolve({data:'Problema al eliminar usuario1',status:400})}
+                if (!data.Item) {return resolve({data:'No existe usuario',status:400})}
+
+                datos_usuario = data.Item
+                console.log(String(pass),String(datos_usuario.Password))
+                if(String(datos_usuario.Password)!=String(pass)) {return resolve({data:'Contraseña de confirmacion no coincide',status:400})}
+                var params = {
+                    TableName:table_users.Name,
+                    Key:{
+                        "Username":username
+                    }
+                };
+                client_dynamodb.delete(params,function (err,data) {
+                    if (!err) {
+                        return resolve({data:'Se elimino usuario',status:200})
+                    }else {
+                        console.log(err)
+                        return resolve({data:'Problema al eliminar usuario',status:400})
+                    }
+                })
+             })
+        } catch (error) {
+            //console.log(error)
             return resolve({data:'Ocurrio un error al obtener el usuario',status:400})
         }
     })

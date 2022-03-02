@@ -2,6 +2,7 @@ const md5 = require('md5');
 const jwt = require('jsonwebtoken')
 const webServerConfig = require('../config/webserver.config');
 const DynamoDB = require('../services/nodejs/dynamo_s3')
+const din = require('../services/dynamodb')
 
 
 function verificar(token) {
@@ -43,10 +44,9 @@ module.exports.login = async function (request, response) {
         let resultado = await DynamoDB.Login(user.user,encriptPass)
         if (resultado==true) {
             const token = jwt.sign(user,webServerConfig.secret,{expiresIn:"30m"})
-            response.status(200).json({data:token,status: 200})
-            return
+            return response.status(200).json({data:token,status: 200})
         }
-        response.status(401).json({data:'Credenciales de usuario incorrectas',status: 401})
+        return response.status(401).json(resultado)
     } catch (error) {
         response.status(404).json({
             error: 'Ocurrio un error en el login',
@@ -66,7 +66,7 @@ module.exports.getUser = async function (request, response, next) {
         if (resultado.status!=200) return response.status(400).json({data:resultado.data,status: 400})
         response.status(200).json(resultado)
     } catch (error) {
-        console.log(error)
+        //console.log(error)
         return response.status(400).json({data:'Error inesperado',status: 400});
     }
 }
@@ -81,22 +81,30 @@ module.exports.addUser = async function (request, response, next) {
 
         var res = await DynamoDB.add_user(usuario.user,encriptPass,usuario.name,usuario.photo,usuario.user)
         if(res==true) return response.status(200).json({data:'Ingresado con exito',status: 200});
-        else return response.status(400).json({data:res,status: 400})
+        else return response.status(400).json(res)
     } catch (error) {
-        console.log(error)
+        //console.log(error)
         return response.status(400).json({data:'Error inesperado',status: 400});
     }
 }
 // PUT USER Endpoint para actualizar un usuario.
 module.exports.updateUser = async function (request, response, next) {
     try {
-        response.status(200).json({
-            mensaje: 'hola joto'
-        })
+        var token = request.body.data.token || false
+        var usuario=request.body.data
+        var encriptPass = md5(request.body.data.password)
+
+        var decodificado = verificar(token)
+        if (!decodificado) return response.status(401).json({data:'Necesita token de acceso',status: 401});
+        if (!usuario.name || !usuario.user || !usuario.password) {
+            return response.status(400).json({data:'Faltan parametros',status: 400});
+        }
+        var result = await DynamoDB.updateUser(decodificado.user,usuario.user,encriptPass,usuario.name)
+        if (result==true) return response.status(200).json({data:'Actualizacion exitosa',status: 200})
+        return response.status(400).json(result)
     } catch (error) {
-        response.status(404).json({
-            mensaje: 'hubo pedo'
-        })
+        console.log(error)
+        return response.status(400).json({data:'Error inesperado',status: 400});
     }
 }
 // POST PHOTO Endpoint para subir una foto.
@@ -161,3 +169,33 @@ module.exports.deleteAlbum = async function (request, response, next) {
         })
     }
 }
+
+module.exports.deleteUser = async function (request, response, next) {
+    try {
+        if (!request.body.data.password) return response.status(401).json({data:'Necesita pass para confirmacion',status: 401});
+        
+        var token = request.body.data.token || false
+        var decodificado = verificar(token)
+        if (!decodificado) return response.status(401).json({data:'Necesita token de acceso',status: 401});
+
+        var res = await DynamoDB.deleteUser(decodificado.user,md5(request.body.data.password))
+        return response.json(res)
+    } catch (error) {
+        response.status(404).json({
+            mensaje: 'hubo pedo'
+        })
+    }
+}
+
+// module.exports.pruebas = async function (request, response, next) {
+//     try {
+//         console.log(await din.Login("rojascjp","rojascjp"))
+//         response.status(200).json({
+//             mensaje: 'hola joto'
+//         })
+//     } catch (error) {
+//         response.status(404).json({
+//             mensaje: 'hubo pedo'
+//         })
+//     }
+// }
