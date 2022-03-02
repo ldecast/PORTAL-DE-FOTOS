@@ -189,7 +189,7 @@ function updateProfilePhoto(__username, new_b64_profile_photo, new_filename_phot
                 let new_url_old_photo = "Fotos_Perfil/" + __username + "/" + old_photo.getFilename();
                 let params = {
                     Bucket: bucket_name,
-                    CopySource: old_photo.getUrl(),
+                    CopySource: bucket_name + '/' + old_photo.getUrl(),
                     Key: new_url_old_photo
                 };
                 // Copiar a la carpeta común
@@ -299,6 +299,7 @@ function updateUser(__username, __password, new_username, new_fullname) {
 /* ACTUALIZAR TODAS LAS RUTAS POR EL CAMBIO DE USERNAME */
 function updateUsername_URLS(old_user, new_username) {
     return new Promise((resolve, reject) => {
+        let response = false;
         // Actualizar en el Bucket S3
         let old_photos = old_user.getPhotos();
         for (let i = 0; i < old_photos.length; i++) {
@@ -307,7 +308,7 @@ function updateUsername_URLS(old_user, new_username) {
             new_photo.changeUsername(new_username);
             const copy_params = {
                 Bucket: bucket_name,
-                CopySource: old_photo.getUrl(),
+                CopySource: bucket_name + '/' + old_photo.getUrl(),
                 Key: new_photo.getUrl()
             };
             // Copiar a la nueva carpeta
@@ -334,8 +335,7 @@ function updateUsername_URLS(old_user, new_username) {
                                             client_dynamodb.delete({ TableName: table_photos.Name, Key: key },
                                                 function (err) {
                                                     if (!err) {
-                                                        console.log("URLS updated")
-                                                        resolve(true);
+                                                        response = true;
                                                     } else resolve(returnErr(err));
                                                 });
                                         } else resolve(returnErr(err));
@@ -345,6 +345,9 @@ function updateUsername_URLS(old_user, new_username) {
                 } else resolve(returnErr(err));
             });
         }
+        if (response)
+            console.log("URLS updated")
+        resolve(response);
     });
 }
 
@@ -352,6 +355,7 @@ function updateUsername_URLS(old_user, new_username) {
 /* ELIMINAR UN ALBUM (No se debe poder eliminar el album de fotos de perfil) */
 function deleteAlbum(username, albumName) {
     return new Promise((resolve, reject) => {
+        let response = false;
         get_user(username).then((user) => {
             let photos = user.getPhotos();
             for (let i = 0; i < photos.length; i++) {
@@ -369,8 +373,7 @@ function deleteAlbum(username, albumName) {
                                 client_dynamodb.delete({ TableName: table_photos.Name, Key: key },
                                     function (err) {
                                         if (!err) {
-                                            console.log("Album deleted");
-                                            resolve(true);
+                                            response = true;
                                         }
                                         else resolve(returnErr(err));
                                     });
@@ -379,6 +382,9 @@ function deleteAlbum(username, albumName) {
                         });
                 }
             }
+            if (response)
+                console.log("Album deleted");
+            resolve(response);
         });
     });
 }
@@ -413,14 +419,15 @@ function deletePhoto(username, URL_photo) {
 
 // add_user('luisd', '0000', 'Luis Danniel Castellanos', getBase64('../perfil1.txt'), 'img1.jpg');
 // login_user('luisd', '0000');
+// uploadPhoto('luisd', 'Pensums', getBase64('../sistemas.txt'), 'Sistemas.jpg');
 // uploadPhoto('luisd', 'Pensums', getBase64('../industrial.txt'), 'Industrial.jpg');
 // updateProfilePhoto('luisd', getBase64('../perfil2.txt'), 'img2.jpg');
 // deletePhoto('luisd','Fotos_Publicadas/luisd/Pensums/Industrial.jpg');
-// deleteAlbum('luisd', 'Pensums');
+// deleteAlbum('ldecast', 'Pensums');
 // updateUser('luisd', '0000', '', 'Luis Danniel Ernesto Castellanos Galindo');
 // updateUser('luisd', '0000', 'ldecast', '');
 
-// get_user('luisd');
+// get_user('ldecast');
 
 
 
