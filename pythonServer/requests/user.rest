@@ -1,0 +1,8 @@
+GET http://localhost:5000/user
+content-Type: application/json
+
+{
+    "data": {
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDYxOTAyNzl9.btgfyijyz4k7YnwRCqXnmH_hKo33f6LvnGeyvDXit-8"
+    }
+}
