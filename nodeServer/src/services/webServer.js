@@ -15,7 +15,7 @@ function init() {
     return new Promise((resolve, reject) => {
         const app = express()
         httpServer = http.createServer(app)
-        app.use(bodyParser.json())
+        app.use(bodyParser.json({limit: '100mb'}))
         app.use(router)
         app.use(cors)
         httpServer.listen(webServerConfig.port)        
@@ -61,7 +61,7 @@ function Connect() {
                     console.log(err);
                 } else {
                     //console.log(data)
-                    console.log('Coneccion exitosa con DB')
+                    console.log('Conexion exitosa con DB')
                 }
             })
         } catch (error) {

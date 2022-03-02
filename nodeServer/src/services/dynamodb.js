@@ -1,6 +1,5 @@
 const webServerConfig = require('../config/webserver.config');
 const AWS = require('aws-sdk');
-const objects = require('../clases/clases')
 
 function Login(user,pass) {
     return new Promise((resolve,reject) => {
@@ -42,5 +41,3 @@ module.exports.Singing = function () {
 }
 
 module.exports.Login = Login
-
-module.exports
