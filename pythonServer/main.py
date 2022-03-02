@@ -1,7 +1,10 @@
+from crypt import methods
 from curses import has_il
 import json
 import hashlib
+from lib2to3.pgen2.tokenize import TokenError
 from os import getuid
+from secrets import token_bytes
 from site import addusersitepackages
 from flask import Flask, jsonify, request, make_response
 from flask_cors import CORS
@@ -59,7 +62,7 @@ def login():
                     'user':
                     str(uname),
                     'exp':
-                    datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
+                    datetime.datetime.utcnow() + datetime.timedelta(minutes=40)
                 }, app.config['SECRET_KEY'])
             return jsonify({
                 'data': {
@@ -146,17 +149,45 @@ def photo():
                                  app.config['SECRET_KEY'],
                                  algorithms=['HS256'])
         confirmation = deletePhoto(tokendecode['user'],photo['url'])
+        if confirmation:
+            return jsonify({
+                'data': 'photo deleted successfully',
+                'status': 200
+            })
+        return jsonify({'data': 'error failde to deleted photo','status':401})
     return jsonify({'data': 'error failed to post or delete', 'status': 401})
 
 
-@app.route("/album")  #get
+@app.route("/album",methods=['GET'])  #get
+@token_required
 def album():
-    return "pagina album"
+    rawdata = request.get_json()
+    data = rawdata['data']
+    token = data['token']
+    data = jwt.decode(token,
+                        app.config['SECRET_KEY'],
+                        algorithms=['HS256'])
+    usuario = get_user(data["user"])
+    retornoAux = []
+    albums = []
+    for element in usuario.photos:
+        retornoAux.append(element.__dict__)
+    for element in retornoAux:
+        albums.append(element["albumName"])
+    return json.dumps(albums)
 
 
-@app.route("/album/<id>")  #delete
-def albumId(id):
-    return "pagina album " + id
+@app.route("/album/<name>")  #delete
+@token_required
+def albumId(name):
+    rawdata=request.get_json()
+    data = rawdata['data']
+    token = data['token']
+    decodetoken = jwt.decode(token,app.config['SECRET_KEY'],algorithms=['HS256'])
+    confirmation =deleteAlbum(decodetoken['user'],name)
+    if confirmation :
+        return jsonify({'data':'success','status':200})
+    return jsonify({'data':'error deleting album','status':403})
 
 
 if __name__ == "__main__":

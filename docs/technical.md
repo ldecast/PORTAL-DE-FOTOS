@@ -157,7 +157,7 @@ Endpoint para obtener los álbumes del usuario.
 }
 ```
 
-### DELETE /album/:id
+### DELETE /album/:name
 Endpoint para eliminar un álbum.
 
 #### Retorno

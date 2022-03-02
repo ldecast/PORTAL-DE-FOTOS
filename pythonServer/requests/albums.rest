@@ -1,0 +1,17 @@
+GET http://localhost:5000/album
+Content-Type: application/json
+
+{
+    "data":{
+        "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDYxOTI1ODh9.ZuecDX690wEsMH-Iconpxo9vUsMOQZ49eN8_fDxDbsQ"
+    }
+}
+
+DELETE http://localhost:5000/album/Fotos de Perfil
+Content-Type: application/json
+
+{
+    "data":{
+        "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDYxOTI1ODh9.ZuecDX690wEsMH-Iconpxo9vUsMOQZ49eN8_fDxDbsQ"
+    }
+}
