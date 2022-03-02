@@ -10,21 +10,21 @@
 #     }
 # }
 
-# POST http://localhost:5000/login HTTP/1.1
-# content-type: application/json
-
-# {
-#     "data":{
-#         "user":"rojascjp",
-#         "password":"rojascjp"
-#         }
-# }
-
-GET http://localhost:5000/user
-content-Type: application/json
+POST http://localhost:5000/login HTTP/1.1
+content-type: application/json
 
 {
     "data":{
-        "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDYxMTM4NzJ9.An7CSda3rN9AcVaPigN77hFotUslTudzr3NZYelNdQM"
-    }
+        "user":"rojascjp",
+        "password":"rojascjp"
+        }
 }
+
+# GET http://localhost:5000/user
+# content-Type: application/json
+
+# {
+#     "data":{
+#         "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDYxMTQ1MjV9.NBGFQvNuhIz4MMMGBlAhBaudFiJoYrsXth90AilwpQc"
+#     }
+# }

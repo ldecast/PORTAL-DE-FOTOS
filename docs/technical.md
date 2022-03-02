@@ -16,7 +16,7 @@
 ### Photo
 ```js
 {
-  "id": number,
+  "url": string,
   "photo": string,
   "album": Album,
   "name": string,
