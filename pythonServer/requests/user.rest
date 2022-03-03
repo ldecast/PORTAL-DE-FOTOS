@@ -1,8 +1,3 @@
 GET http://localhost:5000/user
 content-Type: application/json
-
-{
-    "data": {
-    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiYXZlZHNvbiIsImV4cCI6MTY0NjI4NDQ0Nn0.4WxnmHUiW437620wPSYuHLz9orCF9ve5MX_WXNUT-qs"
-    }
-}
+x-access-token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDYzMzQ4NDF9.VRO7e9swUD8Peg1es5F1D3bLyqRusdXVpmQqcuBWfJY
