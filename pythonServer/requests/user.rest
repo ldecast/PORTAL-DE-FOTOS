@@ -3,6 +3,6 @@ content-Type: application/json
 
 {
     "data": {
-    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDYxOTAyNzl9.btgfyijyz4k7YnwRCqXnmH_hKo33f6LvnGeyvDXit-8"
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiYXZlZHNvbiIsImV4cCI6MTY0NjI4NDQ0Nn0.4WxnmHUiW437620wPSYuHLz9orCF9ve5MX_WXNUT-qs"
     }
 }

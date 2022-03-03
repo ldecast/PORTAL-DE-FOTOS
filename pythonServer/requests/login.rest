@@ -3,7 +3,7 @@ content-type: application/json
 
 {
     "data":{
-        "user":"rojascjp",
+        "user":"avedson",
         "password":"rojascjp"
         }
 }

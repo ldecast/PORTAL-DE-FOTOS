@@ -24,7 +24,7 @@ table_photos = {
     'Attributes': ['PhotoURL', 'AlbumName', 'Username']
 }
 
-bucket_name = "imagenes.semi1"  #"practica1-G10-imagenes"
+bucket_name = "practica1.g10.imagenes"
 
 
 # CONECTAR A LA BASE DE DATOS
