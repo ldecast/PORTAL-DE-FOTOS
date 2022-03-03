@@ -15,7 +15,7 @@ function init() {
     return new Promise((resolve, reject) => {
         const app = express()
         httpServer = http.createServer(app)
-        app.use(bodyParser.json({limit: '100mb'}))
+        app.use(bodyParser.json({limit: '200mb'}))
         app.use(router)
         app.use(cors)
         httpServer.listen(webServerConfig.port)        
