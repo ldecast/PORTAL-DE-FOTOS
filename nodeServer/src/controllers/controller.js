@@ -64,7 +64,7 @@ module.exports.login = async function (request, response) {
         let resultado = await DynamoDB.login(user.user,encriptPass)
         if (resultado==true) {
             const token = jwt.sign(user,webServerConfig.secret,{expiresIn:"30m"})
-            return response.status(200).json({data:token,status: 200})
+            return response.status(200).json({data:{token:token},status: 200})
         }
         return response.status(401).json(resultado)
     } catch (error) {
