@@ -105,7 +105,7 @@ def selfuser():
             retornoAux.append(element.__dict__)
         retorno = usuario
         retorno.photos = retornoAux
-        return json.dumps(retorno.__dict__)
+        return (retorno.__dict__)
     elif request.method == 'PUT':
         rawdata = request.get_json()
         data = rawdata['data']
