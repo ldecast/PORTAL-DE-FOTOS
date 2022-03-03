@@ -17,7 +17,7 @@ function init() {
         httpServer = http.createServer(app)
         app.use(bodyParser.json({limit: '200mb'}))
         app.use(router)
-        app.use(cors)
+        app.use(cors())
         httpServer.listen(webServerConfig.port)        
         .on('listening', () => {
             console.log('Servidor iniciado en el puerto %o',webServerConfig.port)

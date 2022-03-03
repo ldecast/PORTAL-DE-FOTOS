@@ -1,11 +1,13 @@
 const express  = require('express');
 const router = new express.Router()
 const controller = require('../controllers/controller')
+const midelWare = require('../services/midelwate')
 
-router.route('/').get(controller.holaMundo)
+router.get('/',midelWare.verify,controller.holaMundo)
+router.post('/login',controller.login)
+
+router.get('/user',midelWare.verify,controller.getUser)
 router.route('/user').post(controller.addUser)
-router.route('/login').post(controller.login)
-router.route('/user').get(controller.getUser)
 router.route('/photo').post(controller.uploadPhoto)
 router.route('/photo').delete(controller.deletePhoto)
 router.route('/album').get(controller.getAlbum)
