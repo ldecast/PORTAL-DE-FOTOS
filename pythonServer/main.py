@@ -27,13 +27,9 @@ def token_required(f):
 
     @wraps(f)
     def decorated(*args, **kwargs):
-        rawdata = request.get_json()
-        data = rawdata['data']
-        token = data['token']
-
+        token = request.headers.get("X-Access-Token")
         if not token:
             return jsonify({'message': 'token missing'}), 403
-
         data = jwt.decode(token,
                           app.config['SECRET_KEY'],
                           algorithms=['HS256'])
@@ -93,31 +89,42 @@ def user():
 @token_required
 def selfuser():
     if request.method == 'GET':
-        rawdata = request.get_json()
-        data = rawdata['data']
-        token = data['token']
+        token = request.headers.get("X-Access-Token")
         data = jwt.decode(token,
                           app.config['SECRET_KEY'],
                           algorithms=['HS256'])
         usuario = get_user(data["user"])
-        usuario['password'] = ''
         retornoAux = []
         for element in usuario.photos:
             retornoAux.append(element.__dict__)
         retorno = usuario
+        retorno.name = usuario.fullname
+        del(retorno.fullname)
         retorno.photos = retornoAux
+        retorno.password = ''
+        for photo in retornoAux:
+            cadenaComparacion = str(photo['url']).split(sep='/')
+            if len(cadenaComparacion) > 2:
+                if cadenaComparacion[2] == 'actual':
+                    retorno.photo = photo
         return (retorno.__dict__)
     elif request.method == 'PUT':
         rawdata = request.get_json()
         data = rawdata['data']
-        token = data['token']
+        token = request.headers.get("X-Access-Token")
         newuser = data['user']
         password = data['password']
         fullname = data['name']
         data = jwt.decode(token,
                           app.config['SECRET_KEY'],
                           algorithms=['HS256'])
-        confirm = updateUser(data['user'], password, newuser, fullname)
+        passcoded = hashlib.md5(password.encode())
+        if fullname == '':
+            fullname = None
+        if newuser == '':
+            newuser = None
+        confirm = updateUser(data['user'], passcoded.hexdigest(), newuser,
+                             fullname)
         if confirm:
             return jsonify({'data': 'success', 'status': 200})
     return jsonify({'data': 'error failed to get or put', 'status': 401})
@@ -129,7 +136,7 @@ def photo():
     if request.method == 'POST':
         rawdata = request.get_json()
         data = rawdata['data']
-        token = data['token']
+        token = request.headers.get("X-Access-Token")
         tokendecode = jwt.decode(token,
                                  app.config['SECRET_KEY'],
                                  algorithms=['HS256'])
@@ -145,29 +152,28 @@ def photo():
     if request.method == 'DELETE':
         rawdata = request.get_json()
         data = rawdata['data']
-        token = data['token']
+        token = request.headers.get("X-Access-Token")
         tokendecode = jwt.decode(token,
                                  app.config['SECRET_KEY'],
                                  algorithms=['HS256'])
-        confirmation = deletePhoto(tokendecode['user'],photo['url'])
+        confirmation = deletePhoto(tokendecode['user'], photo['url'])
         if confirmation:
             return jsonify({
                 'data': 'photo deleted successfully',
                 'status': 200
             })
-        return jsonify({'data': 'error failde to deleted photo','status':401})
+        return jsonify({
+            'data': 'error failde to deleted photo',
+            'status': 401
+        })
     return jsonify({'data': 'error failed to post or delete', 'status': 401})
 
 
-@app.route("/album",methods=['GET'])  #get
+@app.route("/album", methods=['GET'])  #get
 @token_required
 def album():
-    rawdata = request.get_json()
-    data = rawdata['data']
-    token = data['token']
-    data = jwt.decode(token,
-                        app.config['SECRET_KEY'],
-                        algorithms=['HS256'])
+    token = request.headers.get("X-Access-Token")
+    data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
     usuario = get_user(data["user"])
     retornoAux = []
     albums = []
@@ -181,14 +187,14 @@ def album():
 @app.route("/album/<name>")  #delete
 @token_required
 def albumId(name):
-    rawdata=request.get_json()
-    data = rawdata['data']
-    token = data['token']
-    decodetoken = jwt.decode(token,app.config['SECRET_KEY'],algorithms=['HS256'])
-    confirmation =deleteAlbum(decodetoken['user'],name)
-    if confirmation :
-        return jsonify({'data':'success','status':200})
-    return jsonify({'data':'error deleting album','status':403})
+    token = request.headers.get("X-Access-Token")
+    decodetoken = jwt.decode(token,
+                             app.config['SECRET_KEY'],
+                             algorithms=['HS256'])
+    confirmation = deleteAlbum(decodetoken['user'], name)
+    if confirmation:
+        return jsonify({'data': 'success', 'status': 200})
+    return jsonify({'data': 'error deleting album', 'status': 403})
 
 
 if __name__ == "__main__":
