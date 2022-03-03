@@ -56,7 +56,7 @@ function add_user(username, password, fullname, base64_photo, filename_photo) {
                     Username: username
                 }
                 //console.log("Adding user:", item_users);
-                console.log("Adding user:")
+                console.log("Adding user: ",username)
                 // Insertar usuario
                 client_dynamodb.put({
                     TableName: table_users.Name, Item: item_users

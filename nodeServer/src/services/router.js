@@ -5,9 +5,9 @@ const midelWare = require('../services/midelwate')
 
 router.get('/',midelWare.verify,controller.holaMundo)
 router.post('/login',controller.login)
-
 router.get('/user',midelWare.verify,controller.getUser)
-router.route('/user').post(controller.addUser)
+router.post('/user',controller.addUser)
+//-----------------------------------------
 router.route('/photo').post(controller.uploadPhoto)
 router.route('/photo').delete(controller.deletePhoto)
 router.route('/album').get(controller.getAlbum)

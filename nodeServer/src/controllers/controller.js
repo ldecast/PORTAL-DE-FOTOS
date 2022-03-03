@@ -28,7 +28,7 @@ module.exports.holaMundo = async function (request, response) {
 module.exports.addUser = async function (request, response, next) {
     try {
         var usuario=request.body.data
-        if (!usuario.name || !usuario.user || !usuario.password || !usuario.photo) {
+        if (!usuario.name || !usuario.user || !usuario.password) {
             return response.status(400).json({data:'Faltan parametros',status: 400});
         }
         var encriptPass = md5(request.body.data.password)
