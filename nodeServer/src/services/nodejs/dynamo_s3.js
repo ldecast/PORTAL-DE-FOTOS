@@ -56,7 +56,7 @@ function add_user(username, password, fullname, base64_photo, filename_photo) {
                     Username: username
                 }
                 //console.log("Adding user:", item_users);
-                console.log("Adding user:")
+                console.log("Adding user: ",username)
                 // Insertar usuario
                 client_dynamodb.put({
                     TableName: table_users.Name, Item: item_users
@@ -144,7 +144,7 @@ function get_user(__username,mood) {
                     // Obtener sus fotos
                     client_dynamodb.scan({
                         TableName: table_photos.Name, FilterExpression: 'Username=:name', ExpressionAttributeValues: { ":name": key.Username }
-                    }, function (err, photos_db) {
+                    }, async function (err, photos_db) {
                         if (err) return resolve({data:'Error al obtener las fotos del usuario',status:400})
                         for (let i = 0; i < photos_db.Items.length; i++) {
                             const photo = photos_db.Items[i];
@@ -155,13 +155,43 @@ function get_user(__username,mood) {
                         //console.log(user_response.printUser());
                         console.log('Usuario obtenido con exito')
                         if(mood) return resolve(user_response)
-                        return resolve({data:user_response,status:200});
+
+                        var decod = await convertJsonUser(user_response)
+                        return resolve({data:decod,status:200});
                     });
                 });
         } catch (error) {
             return resolve({data:'Error inesperado al obtener usuario',status:400})
         }
     });
+}
+
+function convertJsonUser(usuario){
+    return new Promise((resolve,reject)=>{
+        var JsonBody={  user: usuario.__username,
+            password: '',photos: [],photo:{ },name: 
+            usuario.__fullname
+        }
+        usuario.__photos.forEach(element => {
+            if (element.__albumName!="Fotos de Perfil") {
+                var aux={url: element.__url,
+                    photo: '',
+                    album: element.__albumName,
+                    name: element.getFilename()
+                }
+                JsonBody.photos.push(aux)
+            }
+        });
+        var perfil = usuario.getProfilePhoto()
+        if(perfil){
+            JsonBody.photo={url: perfil.__url,
+                photo: '',
+                album: perfil.__albumName,
+                name: perfil.getFilename()
+            }
+        }
+        resolve(JsonBody)
+    })
 }
 
 /* SUBIR FOTO A ALBUM DE USUARIO (PARA CREAR UN ALBUM ES NECESARIO SUBIR UNA FOTO) */

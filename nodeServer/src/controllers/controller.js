@@ -16,29 +16,19 @@ function verificar(token) {
     }
 }
 // Hola mundo 
-module.exports.holaMundo = async function (request, response, next) {
-    try {
-        console.log(request.params.id)
-        var token = request.body.data.token || false
-        if (!verificar(token)) {
-            return response.status(401).json({data:'Necesita token de acceso',status: 401});
-        }
-        return response.status(200).json({
-            mensaje: 'token valido'
-        })
-    } catch (error) {
-        console.log(error)
-        response.status(404).json({
-            mensaje: 'hubo pedo'
-        })
-    }
+module.exports.holaMundo = async function (request, response) {
+    console.log('aca')
+    response.status(200).json({
+        mensaje: 'token valido'
+    })
+
 }
 
 //POST USER Endpoint para registrar un usuario.
 module.exports.addUser = async function (request, response, next) {
     try {
         var usuario=request.body.data
-        if (!usuario.name || !usuario.user || !usuario.password || !usuario.photo) {
+        if (!usuario.name || !usuario.user || !usuario.password) {
             return response.status(400).json({data:'Faltan parametros',status: 400});
         }
         var encriptPass = md5(request.body.data.password)
@@ -59,38 +49,25 @@ module.exports.login = async function (request, response) {
         if (!usuario.user || !usuario.password ) {
             return response.status(400).json({data:'Faltan parametros',status: 400});
         }
-        var encriptPass = md5(usuario.password)
         var user = {user: usuario.user}
-        let resultado = await DynamoDB.login(user.user,encriptPass)
+        let resultado = await DynamoDB.login(user.user,md5(usuario.password))
         if (resultado==true) {
             const token = jwt.sign(user,webServerConfig.secret,{expiresIn:"30m"})
             return response.status(200).json({data:{token:token},status: 200})
         }
         return response.status(401).json(resultado)
     } catch (error) {
-        response.status(400).json({
-            error: 'Ocurrio un error en el login',
-            status:400
-        })
+        response.status(400).json({error: 'Ocurrio un error en el login',status:400})
     }
 }
 //GET USSER Endpoint para obtener la información del usuario.
 module.exports.getUser = async function (request, response, next) {
     try {
-        var token = request.body.data.token || false
-        var decodificado = verificar(token)
-        if (!decodificado) return response.status(401).json({data:'Necesita token de acceso',status: 401});
-        if (!decodificado.user) return response.status(400).json({data:'User no enviado',status: 400});
-        var usuario = decodificado.user
-        var resultado = await DynamoDB.get_user(usuario,false)
+        var resultado = await DynamoDB.get_user(request.token.user,false)
         // regresando lo que sea error
         if (resultado.status!=200) return response.status(400).json({data:resultado.data,status: 400})
-        var returnJson = {  user: resultado.data.__username,
-            password: '',
-            photo: resultado.data.__photos,
-            name: resultado.data.__fullname}
         // regresando datos como pide el front
-        response.status(200).json({data:returnJson,status:200})
+        response.status(200).json({data:resultado.data,status:200})
     } catch (error) {
         //console.log(error)
         return response.status(400).json({data:'Error inesperado',status: 400});

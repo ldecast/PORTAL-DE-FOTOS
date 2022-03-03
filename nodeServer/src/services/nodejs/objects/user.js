@@ -54,6 +54,7 @@ Fotos:\n${urls}]`
     }
 
     getProfilePhoto() {
+        //console.log(this.__photos)
         for (let i = 0; i < this.__photos.length; i++) {
             const photo = this.__photos[i];
             let url = photo.getUrl();
