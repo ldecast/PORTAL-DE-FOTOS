@@ -1,3 +1,4 @@
 /node_modules
 .env
 /src/services/dynamodb.js
+notas.txt
