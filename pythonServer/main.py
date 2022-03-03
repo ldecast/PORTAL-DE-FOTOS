@@ -100,6 +100,7 @@ def selfuser():
                           app.config['SECRET_KEY'],
                           algorithms=['HS256'])
         usuario = get_user(data["user"])
+        usuario['password'] = ''
         retornoAux = []
         for element in usuario.photos:
             retornoAux.append(element.__dict__)
