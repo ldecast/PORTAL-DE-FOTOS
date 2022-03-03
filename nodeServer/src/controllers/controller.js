@@ -76,11 +76,8 @@ module.exports.getUser = async function (request, response, next) {
 // PUT USER Endpoint para actualizar un usuario.
 module.exports.updateUser = async function (request, response, next) {
     try {
-        var token = request.body.data.token || false
-        var usuario=request.body.data
-        
-        var decodificado = verificar(token)
-        if (!decodificado) return response.status(401).json({data:'Necesita token de acceso',status: 401});
+        let decodificado=request.token
+        var usuario = request.body.data
         if (!usuario.password) {
             return response.status(400).json({data:'Necesita enviar clave para actualizar',status: 400});
         }
@@ -90,13 +87,16 @@ module.exports.updateUser = async function (request, response, next) {
         if(!usuario.user && usuario.name){
             result = await DynamoDB.updateUser(decodificado.user,encriptPass,'',usuario.name)
         } 
+        else if (usuario.user && !usuario.name) {
+            result = await DynamoDB.updateUser(decodificado.user,encriptPass,usuario.user,'')
+        }
         else if (usuario.user) {
             result = await DynamoDB.updateUser(decodificado.user,encriptPass,usuario.user,usuario.name)
         }
         else return response.status(400).json({data:'No envio parametro a actualizar',status:400})
 
-        if (result.status==200) return response.status(200).json({data:'Usuario actualizado con exito',status:200})
-        return response.status(400).json(result)
+        //if (result.status==200) return response.status(200).json({data:'Usuario actualizado con exito',status:200})
+        return response.status(200).json(result)
     } catch (error) {
         console.log(error)
         return response.status(400).json({data:'Error inesperado',status: 400});
@@ -189,9 +189,7 @@ module.exports.deleteUser = async function (request, response, next) {
     try {
         if (!request.body.data.password) return response.status(401).json({data:'Necesita pass para confirmacion',status: 401});
         
-        var token = request.body.data.token || false
-        var decodificado = verificar(token)
-        if (!decodificado) return response.status(401).json({data:'Necesita token de acceso',status: 401});
+        var decodificado = request.token
 
         var res = await DynamoDB.deleteUser(decodificado.user,md5(request.body.data.password))
         return response.json(res)

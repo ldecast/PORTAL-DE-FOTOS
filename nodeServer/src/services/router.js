@@ -11,9 +11,9 @@ router.post('/user',controller.addUser)
 router.route('/photo').post(controller.uploadPhoto)
 router.route('/photo').delete(controller.deletePhoto)
 router.route('/album').get(controller.getAlbum)
-//router.route('/user').delete(controller.deleteUser)
+//router.delete('/user',midelWare.verify,controller.deleteUser)
 //---------------------------------------------
-router.route('/user').put(controller.updateUser)// pierde la ruta de las imagenes y no actualiza el usuario
+router.put('/user',midelWare.verify,controller.updateUser)// pierde la ruta de las imagenes y no actualiza el usuario
 // ----------------------------------------------
 router.route('/photo').put(controller.updatePhoto)// doble no jala
 router.route('/album').delete(controller.deleteAlbum)

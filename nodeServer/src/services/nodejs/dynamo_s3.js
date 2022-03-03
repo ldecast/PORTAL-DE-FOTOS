@@ -155,9 +155,11 @@ function get_user(__username,mood) {
                         //console.log(user_response.printUser());
                         console.log('Usuario obtenido con exito')
                         if(mood) return resolve(user_response)
+                        else{
+                            var decod = await convertJsonUser(user_response)
+                            return resolve({data:decod,status:200});
+                        }
 
-                        var decod = await convertJsonUser(user_response)
-                        return resolve({data:decod,status:200});
                     });
                 });
         } catch (error) {
@@ -323,19 +325,16 @@ function updateProfilePhoto(__username, new_b64_profile_photo, new_filename_phot
 /* EDITAR UN USUARIO (FULLNAME O USERNAME) */
 function updateUser(__username, __password, new_username, new_fullname) {
     return new Promise((resolve, reject) => {
-        try {
-            const key = { 'Username': __username };
+        const key = { 'Username': __username };
         // Obtener el usuario
         client_dynamodb.get({ TableName: table_users.Name, Key: key },
             function (err, user_db) {
-                console.log('actualizando usuario')
-                if (err) return resolve({data:'Error al consultar dynamo',status:400})
+                if (err) resolve(returnErr(err));
                 let password_db = user_db.Item.Password;
                 let fullname_db = user_db.Item.FullName;
 
                 if (password_db != __password) {  // Ambas password deben estar en md5
-                    //resolve(returnErr("The password is incorrect"));
-                    return resolve({data:'The password is incorrect',status:400})
+                    resolve(returnErr("The password is incorrect"));
                 }
                 if (new_username) {  // Se deben actualizar todas URLS
                     // Obtener el usuario
@@ -349,39 +348,41 @@ function updateUser(__username, __password, new_username, new_fullname) {
                                                 .then((r) => resolve(r));
                                         } else resolve(returnErr(err));
                                     });
-                            } else {
-                                console.log(r)
-                                resolve(returnErr("Error: URLS didn't updated"))
-                            }
+                            } else resolve(returnErr("Error: URLS didn't updated"))
                         });
                     });
                 } else {
-                    // Sólo se cambia el fullname
+                    // Sólo se cambia el nombre
                     client_dynamodb.delete({ TableName: table_users.Name, Key: key },
-                        async function (err) {
+                        function (err) {
                             if (!err) {
-                                var result = await add_user((new_username || __username), __password, (new_fullname || fullname_db), '', '');
-                                if (result.status==200) return resolve({status:200})
-                                else return resolve(result)
-                            } else return resolve({data:'Error al cambiar el nombre completo',status:400})
+                                add_user((new_username || __username), __password, (new_fullname || fullname_db), '', '')
+                                    .then((r) => resolve(r));
+                            } else resolve(returnErr(err));
                         });
                 }
             });
-        } catch (error) {
-            return resolve({data:'Error inesperado al actualizar usuario',status:400})
-        }
     });
 }
 
 /* ACTUALIZAR TODAS LAS RUTAS POR EL CAMBIO DE USERNAME */
 function updateUsername_URLS(old_user, new_username) {
     return new Promise((resolve, reject) => {
-        let response = false;
+        let i = 0
         // Actualizar en el Bucket S3
         let old_photos = old_user.getPhotos();
-        for (let i = 0; i < old_photos.length; i++) {
+        for (i=0;i < old_photos.length; i++) {
+            console.log(i)
             const old_photo = old_photos[i];
-            let new_photo = new Photo(old_photo.getUrl(), old_photo.getAlbumName(), old_photo.getUsername());
+            var resultBucket = await updateBucket(old_photo,new_username)
+            resolve(true)
+        }
+    });
+}
+
+function updateBucket(old_photo,new_username) {
+    return new Promise((resolve,reject)=>{
+        let new_photo = new Photo(old_photo.getUrl(), old_photo.getAlbumName(), old_photo.getUsername());
             new_photo.changeUsername(new_username);
             const copy_params = {
                 Bucket: bucket_name,
@@ -412,8 +413,8 @@ function updateUsername_URLS(old_user, new_username) {
                                             client_dynamodb.delete({ TableName: table_photos.Name, Key: key },
                                                 function (err) {
                                                     if (!err) {
-                                                        response = true;
-                                                    } else resolve(returnErr(err));
+                                                        return resolve(true)
+                                                    } else return resolve(false)
                                                 });
                                         } else resolve(returnErr(err));
                                     });
@@ -421,13 +422,8 @@ function updateUsername_URLS(old_user, new_username) {
                         });
                 } else resolve(returnErr(err));
             });
-        }
-        if (response)
-            console.log("URLS updated")
-        resolve(response);
-    });
+    })
 }
-
 
 /* ELIMINAR UN ALBUM (No se debe poder eliminar el album de fotos de perfil) */
 function deleteAlbum(username, albumName) {
@@ -509,7 +505,6 @@ function deleteUser(username,pass) {
                 if (!data.Item) {return resolve({data:'No existe usuario',status:400})}
 
                 datos_usuario = data.Item
-                console.log(String(pass),String(datos_usuario.Password))
                 if(String(datos_usuario.Password)!=String(pass)) {return resolve({data:'Contraseña de confirmacion no coincide',status:400})}
                 var params = {
                     TableName:table_users.Name,
