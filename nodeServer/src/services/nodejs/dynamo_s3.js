@@ -330,6 +330,7 @@ function updateUser(__username, __password, new_username, new_fullname) {
         client_dynamodb.get({ TableName: table_users.Name, Key: key },
             function (err, user_db) {
                 if (err) resolve(returnErr(err));
+                if(!user_db.Item) return resolve(returnErr('No se obtuvieron datos'))
                 let password_db = user_db.Item.Password;
                 let fullname_db = user_db.Item.FullName;
 
@@ -338,17 +339,18 @@ function updateUser(__username, __password, new_username, new_fullname) {
                 }
                 if (new_username) {  // Se deben actualizar todas URLS
                     // Obtener el usuario
-                    get_user(__username,true).then((user) => {
-                        updateUsername_URLS(user, new_username).then((r) => {
-                            if (r) {
-                                client_dynamodb.delete({ TableName: table_users.Name, Key: key },
-                                    function (err) {
-                                        if (!err) {
-                                            add_user((new_username || __username), __password, (new_fullname || fullname_db), '', '')
-                                                .then((r) => resolve(r));
-                                        } else resolve(returnErr(err));
-                                    });
-                            } else resolve(returnErr("Error: URLS didn't updated"))
+                    get_user2(__username).then((user) => {
+                        updateUsername_URLS(user, new_username).then(() => {
+                            client_dynamodb.delete({ TableName: table_users.Name, Key: key },
+                                function (err) {
+                                    if (!err) {
+                                        add_user((new_username || __username), __password, (new_fullname || fullname_db), '', '')
+                                            .then((rr) => {
+                                                console.log("user update correctly")
+                                                resolve(rr)
+                                            });
+                                    } else resolve(returnErr(err));
+                                });
                         });
                     });
                 } else {
@@ -368,21 +370,12 @@ function updateUser(__username, __password, new_username, new_fullname) {
 /* ACTUALIZAR TODAS LAS RUTAS POR EL CAMBIO DE USERNAME */
 function updateUsername_URLS(old_user, new_username) {
     return new Promise((resolve, reject) => {
-        let i = 0
+        let response = false;
         // Actualizar en el Bucket S3
         let old_photos = old_user.getPhotos();
-        for (i=0;i < old_photos.length; i++) {
-            console.log(i)
+        for (let i = 0; i < old_photos.length; i++) {
             const old_photo = old_photos[i];
-            var resultBucket = await updateBucket(old_photo,new_username)
-            resolve(true)
-        }
-    });
-}
-
-function updateBucket(old_photo,new_username) {
-    return new Promise((resolve,reject)=>{
-        let new_photo = new Photo(old_photo.getUrl(), old_photo.getAlbumName(), old_photo.getUsername());
+            let new_photo = new Photo(old_photo.getUrl(), old_photo.getAlbumName(), old_photo.getUsername());
             new_photo.changeUsername(new_username);
             const copy_params = {
                 Bucket: bucket_name,
@@ -413,8 +406,8 @@ function updateBucket(old_photo,new_username) {
                                             client_dynamodb.delete({ TableName: table_photos.Name, Key: key },
                                                 function (err) {
                                                     if (!err) {
-                                                        return resolve(true)
-                                                    } else return resolve(false)
+                                                        response = true;
+                                                    } else resolve(returnErr(err));
                                                 });
                                         } else resolve(returnErr(err));
                                     });
@@ -422,7 +415,43 @@ function updateBucket(old_photo,new_username) {
                         });
                 } else resolve(returnErr(err));
             });
-    })
+        }
+        if (response)
+            console.log("URLS updated")
+        resolve(response);
+    });
+}
+
+function get_user2(__username) {
+    return new Promise((resolve, reject) => {
+        try {
+            const key = { 'Username': __username };
+            // Obtener el usuario
+            client_dynamodb.get({ TableName: table_users.Name, Key: key },
+                function (err, user_db) {
+                    if (err) resolve(returnErr(err));
+                    const username = user_db.Item.Username;
+                    const password = user_db.Item.Password;
+                    const fullname = user_db.Item.FullName;
+                    let user_response = new UserDB(username, password, fullname);
+                    // Obtener sus fotos
+                    client_dynamodb.scan({
+                        TableName: table_photos.Name, FilterExpression: 'Username=:name', ExpressionAttributeValues: { ":name": key.Username }
+                    }, function (err, photos_db) {
+                        if (err) resolve(returnErr(err));
+                        for (let i = 0; i < photos_db.Items.length; i++) {
+                            const photo = photos_db.Items[i];
+                            const url = photo.PhotoURL;
+                            const albumName = photo.AlbumName;
+                            user_response.addPhoto(url, albumName);
+                        }
+                        resolve(user_response);
+                    });
+                });
+        } catch (error) {
+            resolve(returnErr(error));
+        }
+    });
 }
 
 /* ELIMINAR UN ALBUM (No se debe poder eliminar el album de fotos de perfil) */

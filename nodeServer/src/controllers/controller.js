@@ -84,6 +84,13 @@ module.exports.updateUser = async function (request, response, next) {
         var encriptPass = md5(usuario.password)
         var result
         // si no envia username es porque solo quiere actualizar el nombre
+        // COMPROBAR QUE NO EXISTA EL USER A CAMBIAR
+        if (usuario.user) {
+            var comprovarUser = await DynamoDB.get_user(usuario.user,false)
+            if (comprovarUser.status==200) {
+                return response.status(400).json({data:'El username ya existe',status:400})
+            }
+        }
         if(!usuario.user && usuario.name){
             result = await DynamoDB.updateUser(decodificado.user,encriptPass,'',usuario.name)
         } 
@@ -94,9 +101,8 @@ module.exports.updateUser = async function (request, response, next) {
             result = await DynamoDB.updateUser(decodificado.user,encriptPass,usuario.user,usuario.name)
         }
         else return response.status(400).json({data:'No envio parametro a actualizar',status:400})
-
-        //if (result.status==200) return response.status(200).json({data:'Usuario actualizado con exito',status:200})
-        return response.status(200).json(result)
+        if (result.status==200) return response.status(200).json({data:'Usuario actualizado con exito',status:200})
+        return response.status(400).json({data:'Ocurrio un error',status:400})
     } catch (error) {
         console.log(error)
         return response.status(400).json({data:'Error inesperado',status: 400});
