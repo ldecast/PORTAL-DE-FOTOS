@@ -1,0 +1,48 @@
+POST http://localhost:5000/login
+content-type: application/json
+
+{
+  "data": {
+    "user": "avedson",
+    "password": "rojascjp"
+  }
+}
+
+###
+
+GET http://localhost:5000/user
+content-type: application/json
+
+{
+  "data": {
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicGFibG9jNSIsImV4cCI6MTY0NjI4MzM5Nn0.c5eYxdNK8gygyomEf2CwcY1jAbcyUjBHHKnqUjPFEnY"
+  }
+}
+
+###
+
+POST http://localhost:5000/user
+content-type: application/json
+
+{
+  "data": {
+    "user": "pabloc5",
+    "password": "pass",
+    "photo": "123",
+    "name": "pablo"
+  }
+}
+
+###
+
+PUT http://localhost:5000/user
+content-type: application/json
+
+{
+  "data": {
+    "password": "1a1dc91c907325c69271ddf0c944bc72",
+    "name": "pablo nuevo",
+    "user": "",
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicGFibG9jNSIsImV4cCI6MTY0NjI4MzM5Nn0.c5eYxdNK8gygyomEf2CwcY1jAbcyUjBHHKnqUjPFEnY"
+  }
+}

@@ -6,6 +6,7 @@
   "user": string,
   "password:" string,
   "photo": Photo,
+  "photos": Photo[],
   "name": string
 }
 ```
@@ -19,8 +20,7 @@
   "url": string,
   "photo": string,
   "album": Album,
-  "name": string,
-  "date": Date
+  "name": string
 }
 ```
 - La foto debe ser un string en base64 del lado del cliente, y un enlace a la foto en la base de datos.
@@ -29,7 +29,7 @@
 ```js
 {
   "id": number,
-  "name": string,
+  "name": string
 }
 ```
 - La foto debe ser un string en base64 del lado del cliente, y un enlace a la foto en la base de datos.
