@@ -4,7 +4,7 @@ export default async (method, url, data = null) => {
   try {
     const headers = {
       'content-type': 'application/json',
-      'X-Access-oken': localStorage.getItem('faunaToken')
+      'x-access-token': localStorage.getItem('faunaToken')
     }
 
     const body = data
@@ -27,7 +27,7 @@ export default async (method, url, data = null) => {
     const jsonResponse = await response.json()
 
     console.info('fetched:', jsonResponse)
-    return jsonResponse
+    return jsonResponse.data
   } catch (error) {
     console.error('error:', error)
     throw error

@@ -25,6 +25,8 @@ function LoginPage() {
 
     loginUser(User)
       .then((data) => {
+        localStorage.setItem('faunaToken', data.token)
+
         toast.success('Login correcto')
 
         const newUser = {

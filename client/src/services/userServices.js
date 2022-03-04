@@ -1,10 +1,7 @@
 import request from '@/helpers/request'
 
 export const loginUser = (user) => {
-  return request('POST', '/login', user).then(({ data }) => {
-    localStorage.setItem('faunaToken', headers['x-access-token'])
-    return data
-  })
+  return request('POST', '/login', user)
 }
 
 export const getUser = () => {
