@@ -26,7 +26,7 @@ export default async (method, url, data = null) => {
 
     const jsonResponse = await response.json()
 
-    console.info('fetched:', jsonResponse)
+    console.info('fetched:', jsonResponse.data)
     return jsonResponse.data
   } catch (error) {
     console.error('error:', error)

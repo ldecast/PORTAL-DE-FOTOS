@@ -26,7 +26,11 @@ function App() {
 
     getUser()
       .then((user) => {
-        setUser(user)
+        const newUser = {
+          isLoggedIn: true,
+          ...user
+        }
+        setUser(newUser)
       })
       .catch((err) => {
         toast.error('Error al obtener el usuario')

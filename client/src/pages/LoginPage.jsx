@@ -30,7 +30,7 @@ function LoginPage() {
         toast.success('Login correcto')
 
         const newUser = {
-          ...data,
+          ...emptyUser,
           isLoggedIn: true
         }
 
