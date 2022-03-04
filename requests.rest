@@ -21,7 +21,7 @@ content-type: application/json
 
 GET http://localhost:5000/user
 content-type: application/json
-x-access-token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicGFibG9jY2MiLCJleHAiOjE2NDYzNTg0MTR9.MzWfWNsWXm4vFHGCj8xgFkmxtV7eo_cXr0l8zv_3WtA
+x-access-token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicGFibG9jY2MiLCJleHAiOjE2NDYzNjAyODh9.m6SdwnK317bH0dbWPfO_LugCsY7Kuv6CHG1PTFi
 
 ###
 

@@ -178,6 +178,7 @@ def uploadPhoto(username: str, albumName: str, base64_photo: str,
                              url,
                              ExtraArgs={'ContentType': "image"})
     print("Upload Successful")
+    return True
 
 
 # ACTUALIZAR LA FOTO DE PERFIL

@@ -6,8 +6,8 @@ from lib2to3.pgen2.tokenize import TokenError
 from os import getuid
 from secrets import token_bytes
 from site import addusersitepackages
-from flask import Flask, jsonify, request, make_response
-from flask_cors import CORS
+from flask import Flask, jsonify, request,make_response
+from flask_cors import CORS 
 import jwt
 import datetime
 from functools import wraps
@@ -22,7 +22,6 @@ s3 = None
 dynamo = None
 #TODO tengo que quitar el app.debug para produccion
 
-
 def token_required(f):
 
     @wraps(f)
@@ -30,9 +29,7 @@ def token_required(f):
         token = request.headers.get("X-Access-Token")
         if not token:
             return jsonify({'message': 'token missing'}), 403
-        data = jwt.decode(token,
-                          app.config['SECRET_KEY'],
-                          algorithms=['HS256'])
+        data = jwt.decode(token,app.config['SECRET_KEY'],algorithms=['HS256'])
         return f(*args, **kwargs)
 
     return decorated
@@ -60,9 +57,7 @@ def login():
                     'exp':
                     datetime.datetime.utcnow() + datetime.timedelta(minutes=40)
                 }, app.config['SECRET_KEY'])
-            resp = make_response({data:"success"})
-            resp.headers['X-Access-Token'] = token.decode('utf-8')
-            return resp
+            return jsonify({'data': {"token":token.decode('utf-8')}, 'status': 200})
     return jsonify({'data': 'Credenciales invalidas', 'status': 401})
 
 
@@ -93,6 +88,10 @@ def selfuser():
         usuario = get_user(data["user"])
         retornoAux = []
         for element in usuario.photos:
+            cadenaComparacion = str(element.url).split(sep='/')
+            element.album = cadenaComparacion[2]
+            element.name = cadenaComparacion[3]
+            del(element.username)
             retornoAux.append(element.__dict__)
         retorno = usuario
         retorno.name = usuario.fullname

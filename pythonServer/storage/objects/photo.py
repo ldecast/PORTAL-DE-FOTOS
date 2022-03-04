@@ -2,11 +2,11 @@
 class Photo:
     def __init__(self, url: str, albumName: str, username: str):
         self.url = url
-        self.albumName = albumName
+        self.album = albumName
         self.username = username
 
     def getAlbumName(self) -> str:
-        return self.albumName
+        return self.album
 
     def getUsername(self) -> str:
         return self.username
@@ -16,7 +16,7 @@ class Photo:
 
     # De cambiarse el nombre de un album se deberían actualizar todas las rutas de fotos (no lo dice el enunciado)
     def setAlbumName(self, new_albumName: str):
-        self.albumName = new_albumName
+        self.album = new_albumName
 
     def setUsername(self, new_username: str):
         self.username = new_username

@@ -4,7 +4,7 @@ export default async (method, url, data = null) => {
   try {
     const headers = {
       'content-type': 'application/json',
-      'x-access-token': localStorage.getItem('faunaToken')
+      'X-Access-oken': localStorage.getItem('faunaToken')
     }
 
     const body = data
