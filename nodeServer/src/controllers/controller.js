@@ -53,10 +53,12 @@ module.exports.login = async function (request, response) {
         let resultado = await DynamoDB.login(user.user,md5(usuario.password))
         if (resultado==true) {
             const token = jwt.sign(user,webServerConfig.secret,{expiresIn:"30m"})
-            return response.status(200).json({data:{token:token},status: 200})
+            response.setHeader("X-Access-Token",token)
+            return response.status(200).json({data:"Login exitoso",status: 200})
         }
         return response.status(401).json(resultado)
     } catch (error) {
+        console.log(error)
         response.status(400).json({error: 'Ocurrio un error en el login',status:400})
     }
 }
@@ -76,47 +78,50 @@ module.exports.getUser = async function (request, response, next) {
 // PUT USER Endpoint para actualizar un usuario.
 module.exports.updateUser = async function (request, response, next) {
     try {
-        var token = request.body.data.token || false
-        var usuario=request.body.data
-        
-        var decodificado = verificar(token)
-        if (!decodificado) return response.status(401).json({data:'Necesita token de acceso',status: 401});
+        let decodificado=request.token
+        var usuario = request.body.data
         if (!usuario.password) {
             return response.status(400).json({data:'Necesita enviar clave para actualizar',status: 400});
         }
         var encriptPass = md5(usuario.password)
         var result
         // si no envia username es porque solo quiere actualizar el nombre
+        // COMPROBAR QUE NO EXISTA EL USER A CAMBIAR
+        if (usuario.user) {
+            var comprovarUser = await DynamoDB.get_user(usuario.user,false)
+            if (comprovarUser.status==200) {
+                return response.status(400).json({data:'El username ya existe',status:400})
+            }
+        }
         if(!usuario.user && usuario.name){
             result = await DynamoDB.updateUser(decodificado.user,encriptPass,'',usuario.name)
         } 
+        else if (usuario.user && !usuario.name) {
+            result = await DynamoDB.updateUser(decodificado.user,encriptPass,usuario.user,'')
+        }
         else if (usuario.user) {
             result = await DynamoDB.updateUser(decodificado.user,encriptPass,usuario.user,usuario.name)
         }
         else return response.status(400).json({data:'No envio parametro a actualizar',status:400})
-
         if (result.status==200) return response.status(200).json({data:'Usuario actualizado con exito',status:200})
-        return response.status(400).json(result)
+        return response.status(400).json({data:'Ocurrio un error',status:400})
     } catch (error) {
         console.log(error)
         return response.status(400).json({data:'Error inesperado',status: 400});
     }
 }
 // POST PHOTO Endpoint para subir una foto.
-module.exports.uploadPhoto  = async function (request, response, next) {
+module.exports.uploadPhoto  = async function (request, response) {
     try {
-        var token = request.body.data.token || false
-        var data=request.body.data
+        var data=request.body.data.photo
         var foto ={
-            url: data.ulr,
+            url: '',
             photo: data.photo,
             album: data.album,
             name: data.name,
-            date: data.date
           }
-        
-        var decodificado = verificar(token)
-        if (!decodificado) return response.status(401).json({data:'Necesita token de acceso',status: 401});
+        var decodificado = request.token
+        var result=true
         var result = await DynamoDB.uploadPhoto(decodificado.user,foto.album,foto.photo,foto.name)
         if (result==true) return response.status(200).json({data:'Foto subida con exito',status: 200});
         return response.status(400).json({data:'No se subio la foto',status: 400});
@@ -142,10 +147,8 @@ module.exports.updatePhoto = async function (request, response, next) {
 // DELETE PHOTO Endpoint para eliminar una foto.
 module.exports.deletePhoto = async function (request, response, next) {
     try {
-        var token = request.body.data.token || false
-        var decodificado = verificar(token)
+        var decodificado = request.token
         var url = request.body.data.url
-        if (!decodificado) return response.status(401).json({data:'Necesita token de acceso',status: 401});
         if(!request.body.data.url) return response.status(401).json({data:'Necesita enviar la url',status: 401});
         var result = await DynamoDB.deletePhoto(decodificado.user,url)
         if (result==true) return response.status(200).json({data:'Foto eliminada con exito',status: 200});
@@ -189,9 +192,7 @@ module.exports.deleteUser = async function (request, response, next) {
     try {
         if (!request.body.data.password) return response.status(401).json({data:'Necesita pass para confirmacion',status: 401});
         
-        var token = request.body.data.token || false
-        var decodificado = verificar(token)
-        if (!decodificado) return response.status(401).json({data:'Necesita token de acceso',status: 401});
+        var decodificado = request.token
 
         var res = await DynamoDB.deleteUser(decodificado.user,md5(request.body.data.password))
         return response.json(res)

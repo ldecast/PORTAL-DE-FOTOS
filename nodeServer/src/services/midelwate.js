@@ -4,7 +4,6 @@ const webServerConfig = require('../config/webserver.config');
 
 function verifyToken(req, res, next) {
   const token = req.headers['x-access-token'];
-
   if (token) {
     try {
       const decode = jwt.verify(token, webServerConfig.secret);
