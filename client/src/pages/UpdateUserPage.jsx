@@ -1,14 +1,20 @@
 import camera from '@assets/camera.svg'
 import { Button, Container, Grid, Input, Text } from '@nextui-org/react'
+import { toast } from 'react-toastify'
 import { useAtom } from 'jotai'
 import Webcam from 'react-webcam'
+import { Link, useLocation } from 'wouter'
+import {emptyUser} from '@/state'
 
+import { filterBase64 } from '@/helpers/base64'
 import Photo from '@/components/Photo'
 import usePhoto from '@/hooks/usePhoto'
 import { userAtom } from '@/state'
 import css from '@/styles/UpdateUserPage.module.css'
+import { updateUser } from '@/services/userServices'
 
 function UpdateUserPage() {
+  const [location, setLocation] = useLocation()
   const [User, setUser] = useAtom(userAtom)
   const { user, name, password, photo } = User
 
@@ -27,8 +33,7 @@ function UpdateUserPage() {
     const name = data.get('name')
     const password = data.get('password')
 
-    if (!user || !name) {
-      setEditing(false)
+    if (!user && !name && !selectedPhoto) {
       return toast.error('Nada que actualizar')
     }
 
@@ -37,15 +42,24 @@ function UpdateUserPage() {
     const newUser = {
       name,
       user,
-      password
+      password,
+      photo: filterBase64(selectedPhoto)
     }
 
     updateUser(newUser)
       .then(({ data }) => {
-        setEditing(false)
-        console.log(data)
+        toast.success('Usuario actualizado, por favor inicia sesión nuevamente')
+
+        const newUser = {
+          ...emptyUser,
+          isLoggedIn: false
+        }
+
+        setUser(newUser)
+        setLocation('/')
       })
       .catch((err) => {
+        toast.error('Error al actualizar usuario')
         console.log(err)
       })
   }

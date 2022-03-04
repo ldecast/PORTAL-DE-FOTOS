@@ -2,7 +2,7 @@ import camera from '@assets/camera.svg'
 import { Button, Container, Grid, Input, Text } from '@nextui-org/react'
 import { toast } from 'react-toastify'
 import Webcam from 'react-webcam'
-import { Link } from 'wouter'
+import { Link, useLocation } from 'wouter'
 
 import { passwordRegex, usernameRegex } from '@/constants/REGEX'
 import { filterBase64 } from '@/helpers/base64'
@@ -11,6 +11,8 @@ import { createUser } from '@/services/userServices'
 import css from '@/styles/SignupPage.module.css'
 
 function SignupPage() {
+  const {location, setLocation} = useLocation()
+
   const {
     selectedPhoto,
     handleStartTakingPhoto,
@@ -55,11 +57,11 @@ function SignupPage() {
 
     createUser(User)
       .then(({ data }) => {
-        toast.success('Login correcto')
-        console.log(data)
+        toast.success('Registrado correctamente')
+        setLocation('/login')
       })
       .catch((err) => {
-        toast.error('Usuario o contraseña incorrectos')
+        toast.error('Hubo un error en el registro')
         console.log(err)
       })
   }

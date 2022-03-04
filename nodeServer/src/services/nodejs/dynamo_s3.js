@@ -175,14 +175,12 @@ function convertJsonUser(usuario){
             usuario.__fullname
         }
         usuario.__photos.forEach(element => {
-            if (element.__albumName!="Fotos de Perfil") {
                 var aux={url: element.__url,
                     photo: '',
                     album: element.__albumName,
                     name: element.getFilename()
                 }
                 JsonBody.photos.push(aux)
-            }
         });
         var perfil = usuario.getProfilePhoto()
         if(perfil){

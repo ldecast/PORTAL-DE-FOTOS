@@ -89,7 +89,11 @@ module.exports.updateUser = async function (request, response, next) {
         if (usuario.user) {
             var comprovarUser = await DynamoDB.get_user(usuario.user,false)
             if (comprovarUser.status==200) {
-                return response.status(400).json({data:'El username ya existe',status:400})
+                if(usuario.user!=comprovarUser.data.user){
+                    return response.status(400).json({data:'El username ya existe',status:400})
+                }else{
+                    usuario.user=null
+                }
             }
         }
         if(!usuario.user && usuario.name){

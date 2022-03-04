@@ -2,6 +2,21 @@ import { Button, Grid, Input } from '@nextui-org/react'
 
 import Photo from '@/components/Photo'
 import css from '@/styles/UploadPhotoPage.module.css'
+import camera from '@assets/camera.svg'
+import { Button, Container, Grid, Input, Text } from '@nextui-org/react'
+import { toast } from 'react-toastify'
+import { useAtom } from 'jotai'
+import Webcam from 'react-webcam'
+import { Link, useLocation } from 'wouter'
+import {emptyUser} from '@/state'
+
+import { filterBase64 } from '@/helpers/base64'
+import Photo from '@/components/Photo'
+import usePhoto from '@/hooks/usePhoto'
+import { userAtom } from '@/state'
+import css from '@/styles/UpdateUserPage.module.css'
+import { updateUser } from '@/services/userServices'
+
 
 function UploadPhotoPage() {
   const [User, setUser] = useAtom(userAtom)
@@ -46,37 +61,8 @@ function UploadPhotoPage() {
           </Grid>
           <Grid xs={12} sm={8}>
             <Grid.Container gap={2}>
-              <Grid xs={12} sm={6}>
-                <Input
-                  fullWidth
-                  required
-                  id='user'
-                  name='user'
-                  label='Nombre de usuario'
-                  placeholder={user}
-                  helperText='Debe ser único'
-                />
-              </Grid>
-              <Grid xs={12} sm={6}>
-                <Input
-                  fullWidth
-                  required
-                  id='name'
-                  name='name'
-                  label='Nombre completo'
-                  placeholder={name}
-                />
-              </Grid>
-              <Grid xs={12}>
-                <Input.Password
-                  fullWidth
-                  required
-                  id='password'
-                  name='password'
-                  label='Contraseña'
-                  placeholder='Es necesaria para confirmar los cambios'
-                />
-              </Grid>
+            
+            
               <Grid xs={12}>
                 <Button type='submit' color={'success'}>
                   Confirmar

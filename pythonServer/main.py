@@ -95,6 +95,8 @@ def selfuser():
             retornoAux.append(element.__dict__)
         retorno = usuario
         retorno.name = usuario.fullname
+        retorno.user = usuario.username
+        del(retorno.username)
         del(retorno.fullname)
         retorno.photos = retornoAux
         retorno.password = ''
@@ -103,7 +105,8 @@ def selfuser():
             if len(cadenaComparacion) > 2:
                 if cadenaComparacion[2] == 'actual':
                     retorno.photo = photo
-        return (retorno.__dict__)
+        res = jsonify({'data':retorno.__dict__,'status':200})
+        return res
     elif request.method == 'PUT':
         rawdata = request.get_json()
         data = rawdata['data']
@@ -116,9 +119,11 @@ def selfuser():
                           algorithms=['HS256'])
         passcoded = hashlib.md5(password.encode())
         if fullname == '':
-            fullname = None
+            fullname = ''
         if newuser == '':
-            newuser = None
+            newuser = ''
+        if data['user'] == newuser:
+            newuser = ''
         confirm = updateUser(data['user'], passcoded.hexdigest(), newuser,
                              fullname)
         if confirm:
@@ -198,4 +203,4 @@ if __name__ == "__main__":
     dynamo = connectDynamoDB()
     print(s3)
     print(dynamo)
-    app.run()
+    app.run(port=5000)
