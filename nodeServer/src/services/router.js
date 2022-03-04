@@ -8,15 +8,15 @@ router.post('/login',controller.login)
 router.get('/user',midelWare.verify,controller.getUser)
 router.post('/user',controller.addUser)
 router.post('/photo',midelWare.verify,controller.uploadPhoto)
-//-----------------------------------------
 router.delete('/photo',midelWare.verify,controller.deletePhoto)
-router.route('/album').get(controller.getAlbum)
-//router.delete('/user',midelWare.verify,controller.deleteUser)
+router.put('/user',midelWare.verify,controller.updateUser)
+//-----------------------------------------
+router.put('/photo',midelWare.verify,controller.updatePhotoFix)
 //---------------------------------------------
-router.put('/user',midelWare.verify,controller.updateUser)// pierde la ruta de las imagenes y no actualiza el usuario
-// ----------------------------------------------
-router.route('/photo').put(controller.updatePhoto)// doble no jala
+router.route('/album').get(controller.getAlbum)
 router.route('/album').delete(controller.deleteAlbum)
+//router.route('/photo2').put(controller.updatePhoto)
+//router.delete('/user',midelWare.verify,controller.deleteUser)
 
 
 

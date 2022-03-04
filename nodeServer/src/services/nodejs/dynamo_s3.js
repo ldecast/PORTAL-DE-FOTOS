@@ -498,28 +498,28 @@ function deletePhoto(username, URL_photo) {
             function (err) {
                 if (!err) {
                     // Eliminar en DynamoDB
-                    const key = {
+                    const keyDB = {
                         PhotoURL: URL_photo,
                         Username: username
                     };
-                    console.log(key)
-                    client_dynamodb.delete({ TableName: table_photos.Name, Key: key },
+                    //console.log(keyDB)
+                    client_dynamodb.delete({ TableName: table_photos.Name, Key: keyDB },
                         function (err) {
                             if (!err) {
                                 console.log("Photo deleted");
                                 resolve(true);
                             }
-                            else resolve(returnErr(err));
+                            else resolve(returnErr("URL eliminada pero no en la db"));
                         }
                     );
                 }
                 else {
-                    resolve(returnErr(err));
+                    resolve(returnErr("Ruta de la foto no existe"));
                 }
             }
         );
         } catch (error) {
-            return resolve(returnErr(err));
+            return resolve(returnErr("Error inesperado al borrar foto"));
         }
     });
 }
@@ -581,27 +581,22 @@ function getAlbum(username,albumname) {
     });
 }
 
+function updatePhotoAlbum(username,URL_photo,new_b64_photo, new_filename_photo,albumName) {
+    return new Promise((resolve,reject)=>{
+        var userObject = get_user2(username)
+        console.log(username,URL_photo,new_filename_photo,albumName)
+        resolve(true)
 
-// add_user('luisd', '0000', 'Luis Danniel Castellanos', getBase64('../perfil1.txt'), 'img1.jpg');
-// login_user('luisd', '0000');
-// uploadPhoto('luisd', 'Pensums', getBase64('../sistemas.txt'), 'Sistemas.jpg');
-// uploadPhoto('luisd', 'Pensums', getBase64('../industrial.txt'), 'Industrial.jpg');
-// updateProfilePhoto('luisd', getBase64('../perfil2.txt'), 'img2.jpg');
-// deletePhoto('luisd','Fotos_Publicadas/luisd/Pensums/Industrial.jpg');
-// deleteAlbum('ldecast', 'Pensums');
-// updateUser('luisd', '0000', '', 'Luis Danniel Ernesto Castellanos Galindo');
-// updateUser('luisd', '0000', 'ldecast', '');
+        // deletePhoto(username,URL_photo).then((delete_result)=>{
+        //     console.log(delete_result)
+        //     uploadPhoto(username,'',new_b64_photo,new_filename_photo).then((upload_result)=>{
+        //         console.log(upload_result)
 
-// get_user('ldecast');
+        //     })
+        //})
 
-
-
-
-
-
-
-
-
+    })
+}
 
 
 
@@ -620,3 +615,4 @@ module.exports.deletePhoto=deletePhoto
 module.exports.updateProfilePhoto=updateProfilePhoto
 module.exports.deleteAlbum=deleteAlbum
 module.exports.getAlbum=getAlbum
+module.exports.updatePhotoAlbum=updatePhotoAlbum
