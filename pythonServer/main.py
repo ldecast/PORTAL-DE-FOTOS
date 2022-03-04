@@ -60,12 +60,9 @@ def login():
                     'exp':
                     datetime.datetime.utcnow() + datetime.timedelta(minutes=40)
                 }, app.config['SECRET_KEY'])
-            return jsonify({
-                'data': {
-                    'token': token.decode('utf-8')
-                },
-                'status': 200
-            })
+            resp = make_response({data:"success"})
+            resp.headers['X-Access-Token'] = token.decode('utf-8')
+            return resp
     return jsonify({'data': 'Credenciales invalidas', 'status': 401})
 
 
