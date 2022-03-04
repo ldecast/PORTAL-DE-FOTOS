@@ -7,9 +7,9 @@ router.get('/',midelWare.verify,controller.holaMundo)
 router.post('/login',controller.login)
 router.get('/user',midelWare.verify,controller.getUser)
 router.post('/user',controller.addUser)
+router.post('/photo',midelWare.verify,controller.uploadPhoto)
 //-----------------------------------------
-router.route('/photo').post(controller.uploadPhoto)
-router.route('/photo').delete(controller.deletePhoto)
+router.delete('/photo',midelWare.verify,controller.deletePhoto)
 router.route('/album').get(controller.getAlbum)
 //router.delete('/user',midelWare.verify,controller.deleteUser)
 //---------------------------------------------

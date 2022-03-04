@@ -53,10 +53,12 @@ module.exports.login = async function (request, response) {
         let resultado = await DynamoDB.login(user.user,md5(usuario.password))
         if (resultado==true) {
             const token = jwt.sign(user,webServerConfig.secret,{expiresIn:"30m"})
-            return response.status(200).json({data:{token:token},status: 200})
+            response.setHeader("X-Access-Token",token)
+            return response.status(200).json({data:"Login exitoso",status: 200})
         }
         return response.status(401).json(resultado)
     } catch (error) {
+        console.log(error)
         response.status(400).json({error: 'Ocurrio un error en el login',status:400})
     }
 }
@@ -109,20 +111,17 @@ module.exports.updateUser = async function (request, response, next) {
     }
 }
 // POST PHOTO Endpoint para subir una foto.
-module.exports.uploadPhoto  = async function (request, response, next) {
+module.exports.uploadPhoto  = async function (request, response) {
     try {
-        var token = request.body.data.token || false
-        var data=request.body.data
+        var data=request.body.data.photo
         var foto ={
-            url: data.ulr,
+            url: '',
             photo: data.photo,
             album: data.album,
             name: data.name,
-            date: data.date
           }
-        
-        var decodificado = verificar(token)
-        if (!decodificado) return response.status(401).json({data:'Necesita token de acceso',status: 401});
+        var decodificado = request.token
+        var result=true
         var result = await DynamoDB.uploadPhoto(decodificado.user,foto.album,foto.photo,foto.name)
         if (result==true) return response.status(200).json({data:'Foto subida con exito',status: 200});
         return response.status(400).json({data:'No se subio la foto',status: 400});
@@ -148,10 +147,8 @@ module.exports.updatePhoto = async function (request, response, next) {
 // DELETE PHOTO Endpoint para eliminar una foto.
 module.exports.deletePhoto = async function (request, response, next) {
     try {
-        var token = request.body.data.token || false
-        var decodificado = verificar(token)
+        var decodificado = request.token
         var url = request.body.data.url
-        if (!decodificado) return response.status(401).json({data:'Necesita token de acceso',status: 401});
         if(!request.body.data.url) return response.status(401).json({data:'Necesita enviar la url',status: 401});
         var result = await DynamoDB.deletePhoto(decodificado.user,url)
         if (result==true) return response.status(200).json({data:'Foto eliminada con exito',status: 200});

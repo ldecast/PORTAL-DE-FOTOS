@@ -219,14 +219,13 @@ function uploadPhoto(username, albumName, base64_photo, filename_photo) {
                 function (err) {
                     if (!err) {
                         // Guardar la foto en bucket S3
-                        console.log(params)
+                        //console.log(params)
                         client_s3.putObject(params, function (err) {
                             if (!err) {
                                 console.log("Upload Successful")
                                 resolve(true);
                             }
                             else {
-                                console.log('aca')
                                 console.log(err)
                                 resolve(returnErr(err));
                             }
@@ -238,6 +237,7 @@ function uploadPhoto(username, albumName, base64_photo, filename_photo) {
                     }
                 });
         } catch (error) {
+            console.log("aca fallo")
             return resolve({data:'Error inesperado en la subida',status:400})
         }
     });
