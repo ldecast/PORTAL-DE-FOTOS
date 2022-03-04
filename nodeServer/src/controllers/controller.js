@@ -163,9 +163,8 @@ module.exports.updatePhotoFix = async function (request, response) {
         var decodificado = request.token
         var photo = request.body.data.photo
         if(!photo.url) return response.status(400).json({data:'Necesita enviar la url',status: 400});
-        if(!photo.photo) return response.status(400).json({data:'Necesita enviar nueva foto',status: 400});
         var result = await DynamoDB.updatePhotoAlbum(
-            decodificado.user,photo.url,photo.photo,photo.name,photo.album
+            decodificado.user,photo.url,photo.name,photo.album
         )
         if (result==true) return response.status(200).json({data:'Foto actualizada con exito',status: 200});
         return response.status(400).json({data:'No se pudo actualizar la foto',status: 400});
@@ -191,14 +190,11 @@ module.exports.deletePhoto = async function (request, response, next) {
 // GET ALBUM Endpoint para obtener los álbumes del usuario.
 module.exports.getAlbum = async function (request, response, next) {
     try {
-        var token = request.body.data.token || false
-        var decodificado = verificar(token)
-        if (!decodificado) return response.status(401).json({data:'Necesita token de acceso',status: 401});
-        if(!request.body.data.album) return response.status(401).json({data:'Necesita enviar la album',status: 401});
+        var decodificado = request.token
+        if(!request.params.albumname) return response.status(401).json({data:'Necesita enviar la album',status: 401});
 
-        var result = await DynamoDB.getAlbum(decodificado.user,request.body.data.album)
-
-        if (result.data) return response.status(200).json({data:result.data,status: 200});
+        var result = await DynamoDB.getAlbum(decodificado.user,request.params.albumname)
+        if (result.status) return response.status(200).json({data:result.data,status: 200});
         return response.status(400).json({data:'No se pudo obtener el album',status: 400});
     } catch (error) {
         //console.log(error)
@@ -206,15 +202,16 @@ module.exports.getAlbum = async function (request, response, next) {
     }
 }
 // DELETE ALBUM Endpoint para eliminar un álbum.
-module.exports.deleteAlbum = async function (request, response, next) {
+module.exports.deleteAlbum = async function (request, response) {
     try {
-        response.status(200).json({
-            mensaje: 'hola joto'
-        })
+        var decodificado = request.token
+        if(!request.params.albumname) return response.status(401).json({data:'Necesita enviar la album',status: 401});
+
+        var result = await DynamoDB.deleteAlbum(decodificado.user,request.params.albumname)
+        if (result==true) return response.status(200).json({data:"Borrado con exito",status: 200});
+        return response.status(400).json({data:'No se borro el album',status: 400});
     } catch (error) {
-        response.status(404).json({
-            mensaje: 'hubo pedo'
-        })
+        return response.status(400).json({data:'Error inesperado',status: 400});
     }
 }
 

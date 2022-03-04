@@ -141,6 +141,8 @@ Endpoint para eliminar una foto.
 
 ### GET /album
 Endpoint para obtener los álbumes del usuario.
+### nodejs
+    envia el nombre del album en la ruta GET /album/:name
 
 #### Retorno
 ```js
