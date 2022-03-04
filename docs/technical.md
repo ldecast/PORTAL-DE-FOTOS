@@ -19,19 +19,12 @@
 {
   "url": string,
   "photo": string,
-  "album": Album,
+  "album": string,
   "name": string
 }
 ```
-- La foto debe ser un string en base64 del lado del cliente, y un enlace a la foto en la base de datos.
-
-### Album
-```js
-{
-  "id": number,
-  "name": string
-}
-```
+- El url es un enlace dentro del S3.
+- Photo es la imagen en base64
 - La foto debe ser un string en base64 del lado del cliente, y un enlace a la foto en la base de datos.
 
 ## Token

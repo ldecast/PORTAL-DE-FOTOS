@@ -1,14 +1,25 @@
-import css from '@/styles/Navbar.module.css'
-
-import { Link } from 'wouter'
 import { Container, Grid, Text } from '@nextui-org/react'
+import { Link } from 'wouter'
 
 import Logo from '@/components/Logo'
+import css from '@/styles/Navbar.module.css'
 
 const links = [
   {
-    name: 'Home',
-    to: '/'
+    name: 'Editar perfil',
+    to: '/profile'
+  },
+  {
+    name: 'Subir foto',
+    to: '/upload'
+  },
+  {
+    name: 'Álbumes',
+    to: '/albums'
+  },
+  {
+    name: 'Fotos',
+    to: '/photos'
   }
 ]
 
@@ -19,9 +30,7 @@ function Navbar() {
       <Container className={css.items}>
         {links.map(({ name, ...link }) => (
           <Text h6 key={name}>
-            <Link {...link}>
-              {name}
-            </Link>
+            <Link {...link}>{name}</Link>
           </Text>
         ))}
       </Container>

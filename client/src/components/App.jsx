@@ -1,51 +1,86 @@
-import css from '@/styles/App.module.css'
-
+import background from '@assets/background.svg'
 import { Container } from '@nextui-org/react'
-import { Slide, ToastContainer } from 'react-toastify'
+import { useAtom } from 'jotai'
+import { useEffect } from 'react'
+import { Slide, toast, ToastContainer } from 'react-toastify'
 import { Redirect, Route, Switch } from 'wouter'
 
 import Navbar from '@/components/Navbar'
+import AlbumsPage from '@/pages/AlbumsPage'
 import HomePage from '@/pages/HomePage'
 import LoginPage from '@/pages/LoginPage'
+import PhotosPage from '@/pages/PhotosPage'
 import SignupPage from '@/pages/SignupPage'
-
-import background from '@assets/background.svg'
+import UpdateUserPage from '@/pages/UpdateUserPage'
+import UploadPhotoPage from '@/pages/UploadPhotoPage'
+import { getUser } from '@/services/userServices'
+import { userAtom } from '@/state'
+import css from '@/styles/App.module.css'
 
 function App() {
-  const isUserLoggedIn = false
+  const [user, setUser] = useAtom(userAtom)
+  const { isLoggedIn } = user
+
+  useEffect(() => {
+    if (!isLoggedIn) return
+
+    getUser()
+      .then((user) => {
+        setUser(user)
+      })
+      .catch((err) => {
+        toast.error('Error al obtener el usuario')
+      })
+  }, [isLoggedIn])
 
   const routes = [
     {
       path: '/login',
       component: <LoginPage />,
-      condition: !isUserLoggedIn,
-      alternativeComponent: <Redirect to='/' />
+      condition: !isLoggedIn
     },
     {
       path: '/signup',
       component: <SignupPage />,
-      condition: !isUserLoggedIn,
-      alternativeComponent: <Redirect to='/' />
+      condition: !isLoggedIn
     },
     {
-      path: '/',
+      path: '/home',
       component: <HomePage />,
-      condition: isUserLoggedIn,
-      alternativeComponent: <Redirect to='/login' />
+      condition: isLoggedIn
     },
     {
-      path: '',
-      component: <Redirect to='/' />,
-      condition: isUserLoggedIn,
-      alternativeComponent: <Redirect to='/login' />
+      path: '/profile',
+      component: <UpdateUserPage />,
+      condition: isLoggedIn
+    },
+    {
+      path: '/upload',
+      component: <UploadPhotoPage />,
+      condition: isLoggedIn
+    },
+    {
+      path: '/albums',
+      component: <AlbumsPage />,
+      condition: isLoggedIn
+    },
+    {
+      path: '/photos',
+      component: <PhotosPage />,
+      condition: isLoggedIn
+    },
+    {
+      component: <Redirect to='/login' />,
+      condition: !isLoggedIn
+    },
+    {
+      component: <Redirect to='/home' />,
+      condition: isLoggedIn
     }
   ]
 
   return (
-    <main
-      className={css.base}
-      style={{ backgroundImage: `url(${background})` }}
-    >
+    <main className={css.base} style={{ backgroundImage: `url(${background})` }}>
       <ToastContainer
         autoClose={4000}
         limit={1}
@@ -56,11 +91,14 @@ function App() {
       <Navbar />
       <Container className={css.content}>
         <Switch>
-          {routes.map(({ path, component, condition = true, alternativeComponent = <></> }) => (
-            <Route key={path} path={path}>
-              {condition ? component : alternativeComponent}
-            </Route>
-          ))}
+          {routes.map(
+            ({ path = '', component, condition }) =>
+              condition && (
+                <Route key={path} path={path}>
+                  {component}
+                </Route>
+              )
+          )}
         </Switch>
       </Container>
     </main>

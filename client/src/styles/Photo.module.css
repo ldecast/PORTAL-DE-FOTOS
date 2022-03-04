@@ -1,0 +1,35 @@
+.base {
+  width: 200px;
+  margin: auto;
+  aspect-ratio: 1;
+  border: 10px solid #4478;
+  border-radius: 10px;
+}
+
+.base img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}	
+
+.preview {
+  background-color: #5555;
+  backdrop-filter: blur(10px);
+
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 900;
+  height: 100vh;
+  width: 100vw;
+}
+
+.preview img {
+  width: 50%;
+}

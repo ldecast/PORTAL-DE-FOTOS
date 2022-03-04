@@ -1,0 +1,148 @@
+import camera from '@assets/camera.svg'
+import { Button, Container, Grid, Input, Text } from '@nextui-org/react'
+import { useAtom } from 'jotai'
+import Webcam from 'react-webcam'
+
+import Photo from '@/components/Photo'
+import usePhoto from '@/hooks/usePhoto'
+import { userAtom } from '@/state'
+import css from '@/styles/UpdateUserPage.module.css'
+
+function UpdateUserPage() {
+  const [User, setUser] = useAtom(userAtom)
+  const { user, name, password, photo } = User
+
+  const {
+    selectedPhoto,
+    handleStartTakingPhoto,
+    handleTakePhoto,
+    handleSelectPhoto,
+    webcamRef
+  } = usePhoto()
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    const data = new FormData(e.target)
+    const user = data.get('user')
+    const name = data.get('name')
+    const password = data.get('password')
+
+    if (!user || !name) {
+      setEditing(false)
+      return toast.error('Nada que actualizar')
+    }
+
+    if (!password) return toast.error('Por favor ingresa tu contraseña')
+
+    const newUser = {
+      name,
+      user,
+      password
+    }
+
+    updateUser(newUser)
+      .then(({ data }) => {
+        setEditing(false)
+        console.log(data)
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  }
+
+  return (
+    <div className={css.base}>
+      <Grid xs={12}>
+        <Container>
+          <Text h1>Edita tu perfil</Text>
+        </Container>
+      </Grid>
+      <Grid xs={12}>
+        <form autoComplete='off' onSubmit={handleSubmit}>
+          <Grid.Container gap={2}>
+            <Grid xs={12} sm={4} className={css.photo}>
+              {selectedPhoto === 'pending' ? (
+                <Grid.Container gap={2}>
+                  <Grid xs={12} sm={12}>
+                    <Webcam className={css.camera} ref={webcamRef} />
+                  </Grid>
+                  <Grid xs={12} justify='center'>
+                    <Button
+                      auto
+                      icon={<img src={camera} alt='foto de perfil' />}
+                      onClick={handleTakePhoto}
+                    />
+                  </Grid>
+                </Grid.Container>
+              ) : (
+                selectedPhoto && <img src={selectedPhoto} alt='foto de perfil' />
+              )}
+            </Grid>
+            <Grid xs={12}>
+              <Grid.Container gap={1}>
+                <Grid xs={12}>
+                  <Text small>Foto de perfil</Text>
+                </Grid>
+                <Grid xs={6}>
+                  <Button color='secondary' onClick={handleStartTakingPhoto}>
+                    Tomar una foto
+                  </Button>
+                </Grid>
+                <Grid xs={6}>
+                  <Button bordered color='secondary' onClick={handleSelectPhoto}>
+                    Seleccionar una foto
+                  </Button>
+                </Grid>
+              </Grid.Container>
+            </Grid>
+            <Grid xs={12} sm={8}>
+              <Grid.Container gap={2}>
+                <Grid xs={12} sm={6}>
+                  <Input
+                    autoComplete='off'
+                    fullWidth
+                    required
+                    id='user'
+                    name='user'
+                    label='Nombre de usuario'
+                    placeholder={user}
+                    helperText='Debe ser único'
+                  />
+                </Grid>
+                <Grid xs={12} sm={6}>
+                  <Input
+                    autoComplete='off'
+                    fullWidth
+                    required
+                    id='name'
+                    name='name'
+                    label='Nombre completo'
+                    placeholder={name}
+                  />
+                </Grid>
+                <Grid xs={12}>
+                  <Input.Password
+                    autoComplete='off'
+                    fullWidth
+                    required
+                    id='password'
+                    name='password'
+                    label='Contraseña'
+                    placeholder='Es necesaria para confirmar los cambios'
+                  />
+                </Grid>
+                <Grid xs={12}>
+                  <Button type='submit' color={'success'}>
+                    Confirmar
+                  </Button>
+                </Grid>
+              </Grid.Container>
+            </Grid>
+          </Grid.Container>
+        </form>
+      </Grid>
+    </div>
+  )
+}
+
+export default UpdateUserPage

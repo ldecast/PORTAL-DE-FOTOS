@@ -1,2 +1,10 @@
 .base {
+  height: 100%;
+  align-items: center;
 }
+
+.base button {
+  box-sizing: border-box;
+  width: 100%;
+}
+

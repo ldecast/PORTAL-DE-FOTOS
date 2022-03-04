@@ -1,17 +1,23 @@
-import { API_URL } from "@/constants/API"
+import { API_URL } from '@/constants/API'
 
-export default async (method, url, data) => {
-  console.log(`fetching data from ${API_URL}${url} with method ${method} and data ${JSON.stringify(data)}`)
+export default async (method, url, data = null) => {
   try {
     const headers = {
-      'Content-Type': 'application/json',
-      'x-access-token': localStorage.getItem('token'),
+      'content-type': 'application/json',
+      'x-access-token': localStorage.getItem('faunaToken')
     }
 
-    const body = !data ? null : {
-      data: JSON.stringify(data)
-    }
+    const body = data
+      ? JSON.stringify({
+          data
+        })
+      : null
 
+    console.info(
+      `fetching ${method} ${API_URL}${url}
+      headers ${JSON.stringify(headers)}
+      body ${body}`
+    )
     const response = await fetch(`${API_URL}${url}`, {
       method,
       headers,
@@ -20,14 +26,11 @@ export default async (method, url, data) => {
 
     const jsonResponse = await response.json()
 
-    if (jsonResponse.status !== 200) {
-      throw new Error(jsonResponse.data)
-    }
-
-    console.log(jsonResponse)
-    return jsonResponse.data
+    console.info('fetched:', jsonResponse.data)
+    console.info('headers:', response.headers)
+    return { data: jsonResponse.data, headers: response.headers }
   } catch (error) {
-    console.log(error)
+    console.error('error:', error)
     throw error
   }
 }

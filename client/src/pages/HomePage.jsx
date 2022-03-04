@@ -1,34 +1,62 @@
+import { Button, Grid, Input, Text } from '@nextui-org/react'
+import { useAtom } from 'jotai'
+
+import Photo from '@/components/Photo'
+import { emptyUser, userAtom } from '@/state'
 import css from '@/styles/HomePage.module.css'
 
-import { Button, Container, Grid, Input, Text } from '@nextui-org/react'
-
 function HomePage() {
+  const [User, setUser] = useAtom(userAtom)
+  const { user, name, photo } = User
+
+  const handleLogout = () => {
+    localStorage.removeItem('faunaToken')
+    const newUser = { ...emptyUser, isLoggedIn: false }
+    setUser(newUser)
+  }
+
   return (
-    <Grid.Container gap={2} className={css.base} >
-      <Grid xs={12} sm={5}>
-        <Container>
-          <Text h1>Página de inicio</Text>
-        </Container>
+    <Grid.Container gap={2} className={css.base}>
+      <Grid xs={12}>
+        <Grid.Container gap={2} className={css.header}>
+          <Grid xs={8} sm={10}>
+            <Text h1>Datos personales</Text>
+          </Grid>
+          <Grid xs={4} sm={2}>
+            <Button color='error' type='button' onClick={handleLogout}>
+              Cerrar sesión
+            </Button>
+          </Grid>
+        </Grid.Container>
       </Grid>
-      <Grid xs={12} sm={7}>
+      <Grid xs={12}>
         <Grid.Container gap={2}>
-          <Grid xs={12}>
+          <Grid xs={4} className={css.photo}>
+            <Photo {...photo} />
+          </Grid>
+          <Grid xs={8}>
             <Grid.Container gap={2}>
               <Grid xs={12}>
-                <Input fullWidth placeholder="Usuario" />
+                <Input
+                  fullWidth
+                  required
+                  readOnly
+                  id='user'
+                  name='user'
+                  label='Nombre de usuario'
+                  value={user}
+                />
               </Grid>
               <Grid xs={12}>
-                <Input.Password fullWidth placeholder="Contraseña" />
-              </Grid>
-            </Grid.Container>
-          </Grid>
-          <Grid xs={12}>
-            <Grid.Container gap={2} className={css.buttons}>
-              <Grid xs={12} sm={6}>
-                <Button type="submit">Iniciar sesión</Button>
-              </Grid>
-              <Grid xs={12} sm={6}>
-                <Button bordered color="gradient">Crear cuenta</Button>
+                <Input
+                  fullWidth
+                  required
+                  readOnly
+                  id='name'
+                  name='name'
+                  label='Nombre completo'
+                  value={name}
+                />
               </Grid>
             </Grid.Container>
           </Grid>
