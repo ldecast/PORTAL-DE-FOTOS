@@ -17,12 +17,12 @@ const testUser = {
   }
 }
 
-// export const userAtom = atom({
-//   ...emptyUser,
-//   isLoggedIn: !!localStorage.getItem('faunaToken')
-// })
-
 export const userAtom = atom({
-  ...testUser,
-  isLoggedIn: true
+  ...emptyUser,
+  isLoggedIn: !!localStorage.getItem('faunaToken')
 })
+
+// export const userAtom = atom({
+//   ...testUser,
+//   isLoggedIn: true
+// })
