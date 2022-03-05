@@ -4,17 +4,6 @@ const webServerConfig = require('../config/webserver.config');
 const DynamoDB = require('../services/nodejs/dynamo_s3')
 
 
-function verificar(token) {
-    if (!token) {
-        return false
-    }
-    try {
-        const decode = jwt.verify(token, webServerConfig.secret);
-        return decode
-    } catch (err) {
-      return false
-    }
-}
 // Hola mundo 
 module.exports.holaMundo = async function (request, response) {
     response.status(200).json({
@@ -227,5 +216,19 @@ module.exports.deleteUser = async function (request, response, next) {
         response.status(404).json({
             mensaje: 'hubo pedo'
         })
+    }
+}
+
+
+module.exports.getAllAlbumes = async function (request,response) {
+    try {
+        var decodificado = request.token
+
+        var result = await DynamoDB.get_all_albumes(decodificado.user)
+        if (result.status) return response.status(200).json({data:result.data,status: 200});
+        return response.status(400).json({data:'No se pudo obtener el album',status: 400});
+    } catch (error) {
+        console.log(error)
+        return response.status(400).json({data:'Error inesperado',status: 400});
     }
 }

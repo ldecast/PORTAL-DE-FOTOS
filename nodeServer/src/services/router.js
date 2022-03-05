@@ -11,6 +11,7 @@ router.post('/user',controller.addUser)
 router.post('/photo',midelWare.verify,controller.uploadPhoto)
 router.delete('/photo',midelWare.verify,controller.deletePhoto)
 router.put('/photo',midelWare.verify,controller.updatePhotoFix)
+router.get('/album',midelWare.verify,controller.getAllAlbumes)
 router.get('/album/:albumname',midelWare.verify,controller.getAlbum)
 router.delete('/album/:albumname',midelWare.verify,controller.deleteAlbum)
 //--------------------- REVISARLAS

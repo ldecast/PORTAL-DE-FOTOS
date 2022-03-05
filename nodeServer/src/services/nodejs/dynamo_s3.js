@@ -614,14 +614,12 @@ function updatePhotoAlbum(username,URL_photo, new_filename_photo,new_albumName) 
                         CopySource: bucket_name + '/' + old_url,
                         Key: new_url
                     }
-                    console.log("copiando... ",paramsCopy)
                     // COPIANDO EL OBJETO EN S3 EN NUEVA RUTA
                     client_s3.copyObject(paramsCopy, async function (err){
                         if(err) return resolve(returnErr("Error al copiar imagen antigua"))
                         let paramsBorrar={ 
                             Bucket: bucket_name, 
                             Key: old_url }
-                        console.log("borrando... ",paramsBorrar)
                     // BORRANDO EL ANTIGU OBJETO EN S3 Y DB
                         let resultadoBorrar = await deletePhoto(username,old_url)
                         if(!resultadoBorrar) return resolve(returnErr("Error al borrar la foto"))
@@ -634,7 +632,6 @@ function updatePhotoAlbum(username,URL_photo, new_filename_photo,new_albumName) 
                                 Username: username
                             }
                         }
-                        console.log("Ingresando a DB... ",paramsPutDB)
                         client_dynamodb.put(paramsPutDB,function(err){
                             if(err) return resolve(returnErr("Error al ingresar a la db"))
                             console.log("photo updated")
@@ -651,19 +648,31 @@ function updatePhotoAlbum(username,URL_photo, new_filename_photo,new_albumName) 
         } catch (error) {
             return resolve(returnErr("Catch update"))
         }
-        
-
-        // deletePhoto(username,URL_photo).then((delete_result)=>{
-        //     console.log(delete_result)
-        //     uploadPhoto(username,'',new_b64_photo,new_filename_photo).then((upload_result)=>{
-        //         console.log(upload_result)
-
-        //     })
-        //})
 
     })
 }
-
+function get_all_albumes(username){
+    return new Promise((resolve,reject)=>{
+        try {
+            get_user(username,true).then((user)=>{
+                if (user instanceof UserDB) {
+                    var auxReturn = []
+                    let fotos = user.getPhotos()
+                    fotos.forEach(element => {
+                        if (!auxReturn.includes(element.getAlbumName())) {
+                            auxReturn.push(element.getAlbumName())
+                        }
+                    });
+                    return resolve({data:auxReturn,status:true})
+                }
+                return resolve(returnErr("no se pudo obtener informacion del usuario"))
+            })
+        } catch (error) {
+            console.log("aca")
+            return resolve(returnErr(error))
+        }
+    })
+}
 
 
 function getBase64(path) {
@@ -682,3 +691,4 @@ module.exports.updateProfilePhoto=updateProfilePhoto
 module.exports.deleteAlbum=deleteAlbum
 module.exports.getAlbum=getAlbum
 module.exports.updatePhotoAlbum=updatePhotoAlbum
+module.exports.get_all_albumes=get_all_albumes
