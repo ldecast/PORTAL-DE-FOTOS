@@ -9,12 +9,12 @@ jobs:
       run:
         working-directory: client
     steps:
+      - uses: actions/checkout@master
       - uses: actions/setup-node@v2
         with:
           node-version: '16'
       - run: npm install
       - run: npm run build
-      - uses: actions/checkout@master
       - uses: shallwefootball/s3-upload-action@master      
         with:
           aws_key_id: ${{ secrets.AWS_KEY_ID }}
