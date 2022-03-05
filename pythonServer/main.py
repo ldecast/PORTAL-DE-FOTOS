@@ -10,6 +10,7 @@ from secrets import token_bytes
 from site import addusersitepackages
 from flask import Flask, jsonify, request,make_response
 from flask_cors import CORS 
+from random import random
 import jwt
 import datetime
 from functools import wraps
@@ -97,6 +98,8 @@ def selfuser():
                 element.album = cadenaComparacion[-2]
             element.name = cadenaComparacion[-1]
             del(element.username)
+            if element.album == 'actual':
+                element.album = "Fotos_Perfil"
             retornoAux.append(element.__dict__)
         retorno = usuario
         retorno.name = usuario.fullname
@@ -133,7 +136,7 @@ def selfuser():
         if photo != None and photo != '':
             auxiliar  = get_user(tokendecode['user'])
 
-            updateProfilePhoto(tokendecode['user'],photo['photo'],str(len(auxiliar.photos)))
+            updateProfilePhoto(tokendecode['user'],photo['photo'],str(int(random()*10000)))
         confirm = updateUser(tokendecode['user'], passcoded.hexdigest(), newuser,
                              fullname)
         if confirm:
