@@ -3,7 +3,9 @@ from curses import has_il
 import json
 import hashlib
 from lib2to3.pgen2.tokenize import TokenError
+import math
 from os import getuid
+from random import random
 from secrets import token_bytes
 from site import addusersitepackages
 from flask import Flask, jsonify, request,make_response
@@ -129,10 +131,9 @@ def selfuser():
         if tokendecode['user'] == newuser:
             newuser = ''
         if photo != None and photo != '':
-            updateProfilePhoto(tokendecode['user'],photo['photo'],photo['name'])
-            print(photo['photo'])
-            print(photo['name'])
-            print(tokendecode['user'])
+            auxiliar  = get_user(tokendecode['user'])
+
+            updateProfilePhoto(tokendecode['user'],photo['photo'],str(len(auxiliar.photos)))
         confirm = updateUser(tokendecode['user'], passcoded.hexdigest(), newuser,
                              fullname)
         if confirm:

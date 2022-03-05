@@ -219,14 +219,19 @@ def updateProfilePhoto(__username: str, new_b64_profile_photo: str,
     # Obtener el usuario
     user = get_user(__username)
     old_photo = user.getProfilePhoto()
-    new_url_old_photo = "Fotos_Perfil/" + __username + "/" + old_photo.getFilename()
-    copy_source = {'Bucket': bucket_name, 'Key': old_photo.getUrl()}
+    if old_photo:
+        new_url_old_photo = "Fotos_Perfil/" + __username + "/" + old_photo.getFilename()
+    else:
+        new_url_old_photo = "Fotos_Perfil/" + __username + "/user"
+
+    if old_photo:
+        copy_source = {'Bucket': bucket_name, 'Key': old_photo.getUrl()}
     # Copiar a la carpeta común
 
-    print(copy_source, bucket_name,new_url_old_photo,'datos')
-    client_s3.copy(copy_source, bucket_name, new_url_old_photo)
-    # Eliminar la que estaba en /actual
-    client_s3.delete_object(Bucket=bucket_name, Key=old_photo.getUrl())
+        print(copy_source, bucket_name,new_url_old_photo,'datos')
+        client_s3.copy(copy_source, bucket_name, new_url_old_photo)
+        # Eliminar la que estaba en /actual
+        client_s3.delete_object(Bucket=bucket_name, Key=old_photo.getUrl())
     # Cargar la nueva en /actual
     new_url = "Fotos_Perfil/" + __username + "/actual/" + new_filename_photo
     item_photos = {
@@ -249,15 +254,16 @@ def updateProfilePhoto(__username: str, new_b64_profile_photo: str,
     # Insertar ruta en Dynamo
     client_dynamodb.put_item(TableName=table_photos['Name'], Item=item_photos)
     # Actualizar item antiguo en Dynamo
-    key = {
-        'PhotoURL': {
-            'S': old_photo.getUrl()
-        },
-        'Username': {
-            'S': __username
+    if old_photo:
+        key = {
+            'PhotoURL': {
+                'S': old_photo.getUrl()
+            },
+            'Username': {
+                'S': __username
+            }
         }
-    }
-    client_dynamodb.delete_item(TableName=table_photos['Name'], Key=key)
+        client_dynamodb.delete_item(TableName=table_photos['Name'], Key=key)
     # Reutilizar el item cambiando la url
     item_photos['PhotoURL']['S'] = new_url_old_photo
     client_dynamodb.put_item(TableName=table_photos['Name'], Item=item_photos)
