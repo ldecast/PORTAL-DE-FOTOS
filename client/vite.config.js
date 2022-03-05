@@ -3,16 +3,19 @@ import path from 'path'
 import { defineConfig } from 'vite'
 
 export default defineConfig(({ mode }) => ({
-  plugins: [react()],
-  build: {
-    emptyOutDir: true,
-    outDir: '../dist'
-  },
+  plugins: [
+    react({
+      jsxRuntime: 'classic'
+    })
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@assets': path.resolve(__dirname, './assets')
     }
+  },
+  esbuild: {
+    jsxInject: `import React from 'react'`
   },
   css: {
     modules:
