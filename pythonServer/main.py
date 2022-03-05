@@ -112,6 +112,7 @@ def selfuser():
         data = rawdata['data']
         token = request.headers.get("X-Access-Token")
         newuser = data['user']
+        photo = data['photo']
         password = data['password']
         fullname = data['name']
         data = jwt.decode(token,
@@ -124,6 +125,11 @@ def selfuser():
             newuser = ''
         if data['user'] == newuser:
             newuser = ''
+        if photo != None and photo != '':
+            if newuser != '':
+                updateProfilePhoto(data['user'],photo, newuser)
+            else:
+                updateProfilePhoto(data['user'],photo, data['user']+'new')
         confirm = updateUser(data['user'], passcoded.hexdigest(), newuser,
                              fullname)
         if confirm:
@@ -168,7 +174,6 @@ def photo():
             'status': 401
         })
     return jsonify({'data': 'error failed to post or delete', 'status': 401})
-
 
 @app.route("/album", methods=['GET'])  #get
 @token_required
