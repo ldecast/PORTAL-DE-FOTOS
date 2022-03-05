@@ -17,7 +17,6 @@ function verificar(token) {
 }
 // Hola mundo 
 module.exports.holaMundo = async function (request, response) {
-    console.log('aca')
     response.status(200).json({
         mensaje: 'token valido'
     })
@@ -61,6 +60,7 @@ module.exports.login = async function (request, response) {
         response.status(400).json({error: 'Ocurrio un error en el login',status:400})
     }
 }
+
 //GET USSER Endpoint para obtener la información del usuario.
 module.exports.getUser = async function (request, response, next) {
     try {
@@ -74,14 +74,22 @@ module.exports.getUser = async function (request, response, next) {
         return response.status(400).json({data:'Error inesperado',status: 400});
     }
 }
+
 // PUT USER Endpoint para actualizar un usuario.
 module.exports.updateUser = async function (request, response, next) {
     try {
         let decodificado=request.token
         var usuario = request.body.data
+        let cambio_de_foto=false
+        let resultado_cambio=true
+        // varificar que se envie la contra
         if (!usuario.password) {
             return response.status(400).json({data:'Necesita enviar clave para actualizar',status: 400});
         }
+        if(request.body.data.photo){
+            cambio_de_foto=true
+        }
+        // ver si se envia foto para actualizar perfil
         var encriptPass = md5(usuario.password)
         var result
         // si no envia username es porque solo quiere actualizar el nombre
@@ -96,6 +104,14 @@ module.exports.updateUser = async function (request, response, next) {
                 }
             }
         }
+        if (cambio_de_foto) {
+            let foto = request.body.data.photo
+            resultado_cambio=await DynamoDB.updateProfilePhoto(decodificado.user,foto.photo,foto.name)
+            if (!resultado_cambio) {
+                return response.status(400).json({data:'No se pudo actualizar la foto',status:400})
+            }
+        }
+        
         if(!usuario.user && usuario.name){
             result = await DynamoDB.updateUser(decodificado.user,encriptPass,'',usuario.name)
         } 
@@ -105,9 +121,18 @@ module.exports.updateUser = async function (request, response, next) {
         else if (usuario.user) {
             result = await DynamoDB.updateUser(decodificado.user,encriptPass,usuario.user,usuario.name)
         }
-        else return response.status(400).json({data:'No envio parametro a actualizar',status:400})
+        else {
+            if (!cambio_de_foto) {
+                return response.status(400).json({data:'No envio parametro a actualizar',status:400})
+            }else{
+                return response.status(200).json({data:'Foto actualizado con exito',status:200})
+            }
+        }
+
         if (result.status==200) return response.status(200).json({data:'Usuario actualizado con exito',status:200})
         return response.status(400).json({data:'Ocurrio un error',status:400})
+        
+        
     } catch (error) {
         console.log(error)
         return response.status(400).json({data:'Error inesperado',status: 400});
@@ -132,30 +157,31 @@ module.exports.uploadPhoto  = async function (request, response) {
         return response.status(400).json({data:'Error inesperado',status: 400});
     }
 }
-// PUT PHOTO Endpoint para actualizar una foto.
-module.exports.updatePhoto = async function (request, response, next) {
+// PUT PHOTO actualiza las fotos
+module.exports.updatePhotoFix = async function (request, response) {
     try {
-        var token = request.body.data.token || false
-        var decodificado = verificar(token)
-        if (!decodificado) return response.status(401).json({data:'Necesita token de acceso',status: 401});
-        if(!request.body.data.url) return response.status(400).json({data:'Necesita enviar la url',status: 400});
-        if(!request.body.data.photo) return response.status(400).json({data:'Necesita enviar nueva foto',status: 400});
-        var result = await DynamoDB.updateProfilePhoto(decodificado.user,request.body.data.photo,decodificado.user)
+        var decodificado = request.token
+        var photo = request.body.data.photo
+        if(!photo.url) return response.status(400).json({data:'Necesita enviar la url',status: 400});
+        var result = await DynamoDB.updatePhotoAlbum(
+            decodificado.user,photo.url,photo.name,photo.album
+        )
         if (result==true) return response.status(200).json({data:'Foto actualizada con exito',status: 200});
         return response.status(400).json({data:'No se pudo actualizar la foto',status: 400});
     } catch (error) {
         return response.status(400).json({data:'Error inesperado',status: 400});
     }
 }
+
 // DELETE PHOTO Endpoint para eliminar una foto.
 module.exports.deletePhoto = async function (request, response, next) {
     try {
         var decodificado = request.token
-        var url = request.body.data.url
-        if(!request.body.data.url) return response.status(401).json({data:'Necesita enviar la url',status: 401});
-        var result = await DynamoDB.deletePhoto(decodificado.user,url)
+        var photo = request.body.data.photo
+        if(!photo.url) return response.status(401).json({data:'Necesita enviar la url',status: 401});
+        var result = await DynamoDB.deletePhoto(decodificado.user,photo.url)
         if (result==true) return response.status(200).json({data:'Foto eliminada con exito',status: 200});
-        return response.status(400).json({data:'No se eliminar la foto',status: 400});
+        return response.status(400).json({data:result,status: 400});
     } catch (error) {
         //console.log(error)
         return response.status(400).json({data:'Error inesperado',status: 400});
@@ -164,14 +190,11 @@ module.exports.deletePhoto = async function (request, response, next) {
 // GET ALBUM Endpoint para obtener los álbumes del usuario.
 module.exports.getAlbum = async function (request, response, next) {
     try {
-        var token = request.body.data.token || false
-        var decodificado = verificar(token)
-        if (!decodificado) return response.status(401).json({data:'Necesita token de acceso',status: 401});
-        if(!request.body.data.album) return response.status(401).json({data:'Necesita enviar la album',status: 401});
+        var decodificado = request.token
+        if(!request.params.albumname) return response.status(401).json({data:'Necesita enviar la album',status: 401});
 
-        var result = await DynamoDB.getAlbum(decodificado.user,request.body.data.album)
-
-        if (result.data) return response.status(200).json({data:result.data,status: 200});
+        var result = await DynamoDB.getAlbum(decodificado.user,request.params.albumname)
+        if (result.status) return response.status(200).json({data:result.data,status: 200});
         return response.status(400).json({data:'No se pudo obtener el album',status: 400});
     } catch (error) {
         //console.log(error)
@@ -179,15 +202,16 @@ module.exports.getAlbum = async function (request, response, next) {
     }
 }
 // DELETE ALBUM Endpoint para eliminar un álbum.
-module.exports.deleteAlbum = async function (request, response, next) {
+module.exports.deleteAlbum = async function (request, response) {
     try {
-        response.status(200).json({
-            mensaje: 'hola joto'
-        })
+        var decodificado = request.token
+        if(!request.params.albumname) return response.status(401).json({data:'Necesita enviar la album',status: 401});
+
+        var result = await DynamoDB.deleteAlbum(decodificado.user,request.params.albumname)
+        if (result==true) return response.status(200).json({data:"Borrado con exito",status: 200});
+        return response.status(400).json({data:'No se borro el album',status: 400});
     } catch (error) {
-        response.status(404).json({
-            mensaje: 'hubo pedo'
-        })
+        return response.status(400).json({data:'Error inesperado',status: 400});
     }
 }
 
@@ -205,16 +229,3 @@ module.exports.deleteUser = async function (request, response, next) {
         })
     }
 }
-
-// module.exports.pruebas = async function (request, response, next) {
-//     try {
-//         console.log(await din.Login("rojascjp","rojascjp"))
-//         response.status(200).json({
-//             mensaje: 'hola joto'
-//         })
-//     } catch (error) {
-//         response.status(404).json({
-//             mensaje: 'hubo pedo'
-//         })
-//     }
-// }

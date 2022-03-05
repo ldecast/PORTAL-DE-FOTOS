@@ -256,6 +256,7 @@ function updateProfilePhoto(__username, new_b64_profile_photo, new_filename_phot
                     CopySource: bucket_name + '/' + old_photo.getUrl(),
                     Key: new_url_old_photo
                 };
+                console.log(params)
                 // Copiar a la carpeta común
                 client_s3.copyObject(params,
                     function (err) {
@@ -455,38 +456,46 @@ function get_user2(__username) {
 /* ELIMINAR UN ALBUM (No se debe poder eliminar el album de fotos de perfil) */
 function deleteAlbum(username, albumName) {
     return new Promise((resolve, reject) => {
-        let response = false;
-        get_user(username).then((user) => {
-            let photos = user.getPhotos();
-            for (let i = 0; i < photos.length; i++) {
-                const photo = photos[i];
-                if (photo.getAlbumName() == albumName) {
-                    // Eliminar en bucket S3
-                    client_s3.deleteObject({ Bucket: bucket_name, Key: photo.getUrl() },
-                        function (err) {
-                            if (!err) {
-                                // Eliminar en DynamoDB
-                                const key = {
-                                    PhotoURL: photo.getUrl(),
-                                    Username: photo.getUsername()
-                                };
-                                client_dynamodb.delete({ TableName: table_photos.Name, Key: key },
-                                    function (err) {
-                                        if (!err) {
-                                            response = true;
-                                        }
-                                        else resolve(returnErr(err));
-                                    });
-                            }
-                            else resolve(returnErr(err));
-                        });
+        if(albumName=="Fotos de Perfil") return resolve(returnErr("No se puede borrar ese album"))
+        get_user2(username).then((user)=>{
+            if(!user) return resolve(returnErr("No se encontro el usuario"))
+            if(!(user instanceof UserDB)) return resolve(returnErr("No se encontro el usuario"))
+            // se iteran todas las fotos y se borran 
+            let totalFotos=0
+            for (let i = 0; i < user.getPhotos().length; i++) {
+                const element = user.getPhotos()[i];
+                if (element.getAlbumName()==albumName) {
+                    totalFotos++
                 }
             }
-            if (response)
-                console.log("Album deleted");
-            resolve(response);
-        });
+            if(totalFotos==0) return resolve(returnErr("No hay fotos en el album enviado"))
+            borrarAlbum(user,totalFotos,albumName).then((res)=>{
+                console.log("aca y entro")
+                return resolve(res)
+            })
+        })
     });
+}
+const borrarAlbum = async function (user,total,albumName) {
+    try {
+        for (let i = 0; i < user.getPhotos().length; i++) {
+            const element = user.getPhotos()[i];
+            console.log("leyendo... ",element)
+            if (element.getAlbumName()==albumName) {
+                console.log("borrada la.. ",element)
+                let resDelete = await deletePhoto(user.__username,element.getUrl())
+                if(resDelete) total--
+                if (total==0) {
+                    return true
+                }
+            }
+            console.log(i)
+        } 
+    } catch (error) {
+        console.log(error)
+        console.log("Error borrando fotos")
+        return false
+    }
 }
 
 /* ELIMINAR UNA FOTO DEL ALBUM */
@@ -498,28 +507,28 @@ function deletePhoto(username, URL_photo) {
             function (err) {
                 if (!err) {
                     // Eliminar en DynamoDB
-                    const key = {
+                    const keyDB = {
                         PhotoURL: URL_photo,
                         Username: username
                     };
-                    console.log(key)
-                    client_dynamodb.delete({ TableName: table_photos.Name, Key: key },
+                    //console.log(keyDB)
+                    client_dynamodb.delete({ TableName: table_photos.Name, Key: keyDB },
                         function (err) {
                             if (!err) {
                                 console.log("Photo deleted");
                                 resolve(true);
                             }
-                            else resolve(returnErr(err));
+                            else resolve(returnErr("URL eliminada pero no en la db"));
                         }
                     );
                 }
                 else {
-                    resolve(returnErr(err));
+                    resolve(returnErr("Ruta de la foto no existe"));
                 }
             }
         );
         } catch (error) {
-            return resolve(returnErr(err));
+            return resolve(returnErr("Error inesperado al borrar foto"));
         }
     });
 }
@@ -566,12 +575,11 @@ function getAlbum(username,albumname) {
                             var auxIngress = {url: element.getUrl(),
                             photo: '',
                             album: element.getAlbumName(),
-                            name: element.getFilename(),
-                            date: ''}
+                            name: element.getFilename()}
                             auxReturn.push(auxIngress)
                         }
                     });
-                    return resolve({data:auxReturn})
+                    return resolve({data:auxReturn,status:true})
                 }
                 return resolve(returnErr("no se pudo obtener informacion del usuario"))
             })
@@ -581,27 +589,80 @@ function getAlbum(username,albumname) {
     });
 }
 
+function updatePhotoAlbum(username,URL_photo, new_filename_photo,new_albumName) {
+    return new Promise((resolve,reject)=>{
+        try {
+            get_user2(username).then((userDB)=>{
+                if (userDB instanceof UserDB) {
+                    let old_photo=null
+                    for (let i = 0; i < userDB.getPhotos().length; i++) {
+                        const element = userDB.getPhotos()[i];
+                        if (element.getUrl()==URL_photo) {
+                            old_photo=element
+                            break
+                        }
+                    }
+                    if(old_photo==null) return resolve(returnErr("La URL enviada no existe"))
+                    
+                    // Parametros necesarios
+                    if(!new_filename_photo) new_filename_photo = old_photo.getFilename()
+                    if(!new_albumName) new_albumName = old_photo.getAlbumName()
+                    let new_url ="Fotos_Publicadas/"+username+"/"+ new_albumName +  "/" + new_filename_photo
+                    let old_url = URL_photo 
+                    let paramsCopy = {
+                        Bucket: bucket_name,
+                        CopySource: bucket_name + '/' + old_url,
+                        Key: new_url
+                    }
+                    console.log("copiando... ",paramsCopy)
+                    // COPIANDO EL OBJETO EN S3 EN NUEVA RUTA
+                    client_s3.copyObject(paramsCopy, async function (err){
+                        if(err) return resolve(returnErr("Error al copiar imagen antigua"))
+                        let paramsBorrar={ 
+                            Bucket: bucket_name, 
+                            Key: old_url }
+                        console.log("borrando... ",paramsBorrar)
+                    // BORRANDO EL ANTIGU OBJETO EN S3 Y DB
+                        let resultadoBorrar = await deletePhoto(username,old_url)
+                        if(!resultadoBorrar) return resolve(returnErr("Error al borrar la foto"))
+                    // INGRESANDO NUEVO OBJETO EN LA DB
+                        let paramsPutDB={
+                            TableName: table_photos.Name,
+                            Item: {
+                                PhotoURL: new_url,
+                                AlbumName: new_albumName,
+                                Username: username
+                            }
+                        }
+                        console.log("Ingresando a DB... ",paramsPutDB)
+                        client_dynamodb.put(paramsPutDB,function(err){
+                            if(err) return resolve(returnErr("Error al ingresar a la db"))
+                            console.log("photo updated")
+                            return resolve(true)
+                        })
+                        
+                    })
 
-// add_user('luisd', '0000', 'Luis Danniel Castellanos', getBase64('../perfil1.txt'), 'img1.jpg');
-// login_user('luisd', '0000');
-// uploadPhoto('luisd', 'Pensums', getBase64('../sistemas.txt'), 'Sistemas.jpg');
-// uploadPhoto('luisd', 'Pensums', getBase64('../industrial.txt'), 'Industrial.jpg');
-// updateProfilePhoto('luisd', getBase64('../perfil2.txt'), 'img2.jpg');
-// deletePhoto('luisd','Fotos_Publicadas/luisd/Pensums/Industrial.jpg');
-// deleteAlbum('ldecast', 'Pensums');
-// updateUser('luisd', '0000', '', 'Luis Danniel Ernesto Castellanos Galindo');
-// updateUser('luisd', '0000', 'ldecast', '');
+                    return resolve(true)
+                }else{
+                    return resolve(returnErr("No se encontro el usuario en db"))
+                }
+            })
+        } catch (error) {
+            return resolve(returnErr("Catch update"))
+        }
+        
 
-// get_user('ldecast');
+        // deletePhoto(username,URL_photo).then((delete_result)=>{
+        //     console.log(delete_result)
+        //     uploadPhoto(username,'',new_b64_photo,new_filename_photo).then((upload_result)=>{
+        //         console.log(upload_result)
 
+        //     })
+        //})
 
-
-
-
-
-
-
-
+    })
+}
 
 
 
@@ -620,3 +681,4 @@ module.exports.deletePhoto=deletePhoto
 module.exports.updateProfilePhoto=updateProfilePhoto
 module.exports.deleteAlbum=deleteAlbum
 module.exports.getAlbum=getAlbum
+module.exports.updatePhotoAlbum=updatePhotoAlbum
