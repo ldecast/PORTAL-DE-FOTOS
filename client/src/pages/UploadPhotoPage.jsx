@@ -1,51 +1,68 @@
-import { Button, Grid, Input } from '@nextui-org/react'
-
-import Photo from '@/components/Photo'
-import css from '@/styles/UploadPhotoPage.module.css'
 import camera from '@assets/camera.svg'
-import { Button, Container, Grid, Input, Text } from '@nextui-org/react'
-import { toast } from 'react-toastify'
+import { Button, Grid, Input, Text } from '@nextui-org/react'
 import { useAtom } from 'jotai'
+import { useState } from 'react/cjs/react.development'
+import { toast } from 'react-toastify'
 import Webcam from 'react-webcam'
-import { Link, useLocation } from 'wouter'
-import {emptyUser} from '@/state'
 
+import Select from '@/components/Select'
 import { filterBase64 } from '@/helpers/base64'
-import Photo from '@/components/Photo'
 import usePhoto from '@/hooks/usePhoto'
-import { userAtom } from '@/state'
-import css from '@/styles/UpdateUserPage.module.css'
-import { updateUser } from '@/services/userServices'
-
+import { uploadPhoto } from '@/services/photoServices'
+import { albumsAtom, userAtom } from '@/state'
+import css from '@/styles/UploadPhotoPage.module.css'
 
 function UploadPhotoPage() {
-  const [User, setUser] = useAtom(userAtom)
-  const { user, name, password, photo } = User
+  const [creatingAlbum, setCreatingAlbum] = useState(false)
+  const [user, setUser] = useAtom(userAtom)
+  const [albums] = useAtom(albumsAtom)
+
+  const {
+    selectedPhoto,
+    handleStartTakingPhoto,
+    handleTakePhoto,
+    handleSelectPhoto,
+    webcamRef
+  } = usePhoto()
+
+  const handleSelectAlbum = (e) => {
+    const album = e.target.value
+    console.log(album)
+
+    setCreatingAlbum(album === 'Nuevo')
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
     const data = new FormData(e.target)
-    const user = data.get('user')
     const name = data.get('name')
-    const password = data.get('password')
+    const album = data.get('album')
+    const newAlbum = data.get('newAlbum')
 
-    if (!user || !name) {
-      setEditing(false)
-      return toast.error('Nada que actualizar')
+    if (!name) return toast.error('Por favor ingresa un nombre para el album')
+
+    if (!selectedPhoto || selectedPhoto === 'pending')
+      return toast.error('Por favor toma o selecciona una foto')
+
+    if (creatingAlbum && !newAlbum)
+      return toast.error('Por favor ingresa un nombre para el album')
+
+    const photo = {
+      photo: {
+        name,
+        album: (creatingAlbum && newAlbum) || album,
+        photo: filterBase64(selectedPhoto)
+      }
     }
 
-    if (!password) return toast.error('Por favor ingresa tu contraseña')
-
-    const newUser = {
-      name,
-      user,
-      password
-    }
-
-    updateUser(newUser)
+    uploadPhoto(photo)
       .then(({ data }) => {
-        setEditing(false)
         console.log(data)
+        setUser({
+          ...user,
+          photos: [...user.photos, data.photo]
+        })
+        toast.success('Foto subida correctamente')
       })
       .catch((err) => {
         console.log(err)
@@ -56,17 +73,76 @@ function UploadPhotoPage() {
     <div className={css.base}>
       <form onSubmit={handleSubmit}>
         <Grid.Container gap={2}>
-          <Grid xs={12} sm={4} className={css.photo}>
-            <Photo {...photo} />
+          <Grid xs={12} sm={12} className={css.photo}>
+            {selectedPhoto === 'pending' ? (
+              <Grid.Container gap={2}>
+                <Grid xs={12} sm={12}>
+                  <Webcam className={css.camera} ref={webcamRef} />
+                </Grid>
+                <Grid xs={12} justify='center'>
+                  <Button
+                    auto
+                    icon={<img src={camera} alt='foto de perfil' />}
+                    onClick={handleTakePhoto}
+                  />
+                </Grid>
+              </Grid.Container>
+            ) : (
+              selectedPhoto && <img src={selectedPhoto} alt='foto de perfil' />
+            )}
           </Grid>
-          <Grid xs={12} sm={8}>
-            <Grid.Container gap={2}>
-            
-            
+          <Grid xs={12}>
+            <Grid.Container gap={1}>
               <Grid xs={12}>
-                <Button type='submit' color={'success'}>
-                  Confirmar
+                <Text small>Nombre</Text>
+              </Grid>
+              <Grid xs={12}>
+                <Input
+                  fullWidth
+                  required
+                  id='name'
+                  name='name'
+                  label='Nombre de la foto'
+                  placeholder='Ingresa un nombre para la foto'
+                />
+              </Grid>
+              <Grid xs={12}>
+                <Text small>Álbum</Text>
+              </Grid>
+              <Grid xs={12}>
+                <Select
+                  name='album'
+                  options={[...albums, 'Nuevo']}
+                  onChange={handleSelectAlbum}
+                />
+              </Grid>
+              {creatingAlbum && (
+                <Grid xs={12}>
+                  <Input
+                    fullWidth
+                    required
+                    id='newAlbum'
+                    name='newAlbum'
+                    label='Nombre del nuevo álbum'
+                    placeholder='Ingresa un nuevo nombre para el álbum'
+                  />
+                </Grid>
+              )}
+              <Grid xs={12}>
+                <Text small>Foto</Text>
+              </Grid>
+              <Grid xs={6}>
+                <Button color='secondary' onClick={handleStartTakingPhoto}>
+                  Tomar una foto
                 </Button>
+              </Grid>
+              <Grid xs={6}>
+                <Button bordered color='secondary' onClick={handleSelectPhoto}>
+                  Seleccionar una foto
+                </Button>
+              </Grid>
+              <Grid xs={12} sm={6}>
+                <Button type='submit'>Subir foto</Button>
               </Grid>
             </Grid.Container>
           </Grid>

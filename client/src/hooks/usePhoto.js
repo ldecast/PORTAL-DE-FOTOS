@@ -2,8 +2,8 @@ import { useRef, useState } from 'react'
 
 import { toBase64 } from '@/helpers/base64'
 
-function usePhoto() {
-  const [selectedPhoto, setSelectedPhoto] = useState('')
+function usePhoto(initialPhoto) {
+  const [selectedPhoto, setSelectedPhoto] = useState(initialPhoto || '')
   const webcamRef = useRef(null)
 
   const handleStartTakingPhoto = (e) => {

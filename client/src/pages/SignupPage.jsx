@@ -11,7 +11,7 @@ import { createUser } from '@/services/userServices'
 import css from '@/styles/SignupPage.module.css'
 
 function SignupPage() {
-  const {location, setLocation} = useLocation()
+  const [location, setLocation] = useLocation()
 
   const {
     selectedPhoto,
@@ -31,7 +31,7 @@ function SignupPage() {
     console.log(selectedPhoto)
 
     if (!selectedPhoto || selectedPhoto === 'pending')
-      return toast.error('Por favor toma una foto')
+      return toast.error('Por favor toma o selecciona una foto')
 
     if (!user || !password || !confirmPassword || !name)
       return toast.error('Por favor rellena todos los campos')
@@ -57,11 +57,11 @@ function SignupPage() {
 
     createUser(User)
       .then(({ data }) => {
-        toast.success('Registrado correctamente')
         setLocation('/login')
+        toast.success('Registro correcto')
       })
       .catch((err) => {
-        toast.error('Hubo un error en el registro')
+        toast.error('Usuario o contraseña incorrectos')
         console.log(err)
       })
   }

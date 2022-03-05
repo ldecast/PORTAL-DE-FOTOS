@@ -1,17 +1,16 @@
 import camera from '@assets/camera.svg'
 import { Button, Container, Grid, Input, Text } from '@nextui-org/react'
-import { toast } from 'react-toastify'
 import { useAtom } from 'jotai'
+import { toast } from 'react-toastify'
 import Webcam from 'react-webcam'
-import { Link, useLocation } from 'wouter'
-import {emptyUser} from '@/state'
+import { useLocation } from 'wouter'
 
 import { filterBase64 } from '@/helpers/base64'
-import Photo from '@/components/Photo'
 import usePhoto from '@/hooks/usePhoto'
+import { updateUser } from '@/services/userServices'
+import { emptyUser } from '@/state'
 import { userAtom } from '@/state'
 import css from '@/styles/UpdateUserPage.module.css'
-import { updateUser } from '@/services/userServices'
 
 function UpdateUserPage() {
   const [location, setLocation] = useLocation()
