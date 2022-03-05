@@ -56,7 +56,7 @@ x-access-token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicGFibG9jY2MiLCJ
 
 POST http://localhost:5000/photo
 content-type: application/json
-x-access-token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicGFibG9jY2MiLCJleHAiOjE2NDYzNTg0MTR9.MzWfWNsWXm4vFHGCj8xgFkmxtV7eo_cXr0l8zv_3WtA
+x-access-token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDYzNjk1Nzd9.dwiwS9Ppv9HQwgn-VdtgROha8BZ6uzCktO-lwReNuDE
 
 {
   "data": {

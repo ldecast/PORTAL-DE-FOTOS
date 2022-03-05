@@ -89,8 +89,11 @@ def selfuser():
         retornoAux = []
         for element in usuario.photos:
             cadenaComparacion = str(element.url).split(sep='/')
-            element.album = cadenaComparacion[2]
-            element.name = cadenaComparacion[3]
+            if len(cadenaComparacion)==3:
+                element.album = 'Fotos_Perfil'
+            else:
+                element.album = cadenaComparacion[-2]
+            element.name = cadenaComparacion[-1]
             del(element.username)
             retornoAux.append(element.__dict__)
         retorno = usuario
@@ -115,7 +118,7 @@ def selfuser():
         photo = data['photo']
         password = data['password']
         fullname = data['name']
-        data = jwt.decode(token,
+        tokendecode = jwt.decode(token,
                           app.config['SECRET_KEY'],
                           algorithms=['HS256'])
         passcoded = hashlib.md5(password.encode())
@@ -123,21 +126,21 @@ def selfuser():
             fullname = ''
         if newuser == '':
             newuser = ''
-        if data['user'] == newuser:
+        if tokendecode['user'] == newuser:
             newuser = ''
         if photo != None and photo != '':
-            if newuser != '':
-                updateProfilePhoto(data['user'],photo, newuser)
-            else:
-                updateProfilePhoto(data['user'],photo, data['user']+'new')
-        confirm = updateUser(data['user'], passcoded.hexdigest(), newuser,
+            updateProfilePhoto(tokendecode['user'],photo['photo'],photo['name'])
+            print(photo['photo'])
+            print(photo['name'])
+            print(tokendecode['user'])
+        confirm = updateUser(tokendecode['user'], passcoded.hexdigest(), newuser,
                              fullname)
         if confirm:
             return jsonify({'data': 'success', 'status': 200})
     return jsonify({'data': 'error failed to get or put', 'status': 401})
 
 
-@app.route("/photo", methods=['POST', 'DELETE'])  #post
+@app.route("/photo", methods=['POST', 'DELETE','PUT'])  #post
 @token_required
 def photo():
     if request.method == 'POST':
@@ -156,9 +159,10 @@ def photo():
                 'status': 200
             })
         return jsonify({'data': 'error failed to upload photo', 'status': 401})
-    if request.method == 'DELETE':
+    elif request.method == 'DELETE':
         rawdata = request.get_json()
         data = rawdata['data']
+        photo = data['photo']
         token = request.headers.get("X-Access-Token")
         tokendecode = jwt.decode(token,
                                  app.config['SECRET_KEY'],
@@ -173,7 +177,25 @@ def photo():
             'data': 'error failde to deleted photo',
             'status': 401
         })
-    return jsonify({'data': 'error failed to post or delete', 'status': 401})
+    elif request.method == 'PUT':
+        rawdata = request.get_json()
+        data = rawdata['data']
+        photo = data['photo']
+        token = request.headers.get('X-Access-Token')
+        tokendecode = jwt.decode(token,
+                                 app.config['SECRET_KEY'],
+                                 algorithms=['HS256'])
+        confirmation = updatePhoto(photo['url'],photo['album'],photo['name'],tokendecode['user'])
+        if confirmation:
+            return jsonify({
+                'data': 'photo deleted successfully',
+                'status': 200
+            })
+        return jsonify({
+            'data': 'error failde to deleted photo',
+            'status': 401
+        })
+    return jsonify({'data': 'error failed to post, put or delete', 'status': 401})
 
 @app.route("/album", methods=['GET'])  #get
 @token_required
@@ -186,21 +208,40 @@ def album():
     for element in usuario.photos:
         retornoAux.append(element.__dict__)
     for element in retornoAux:
-        albums.append(element["albumName"])
-    return json.dumps(albums)
+        if element['album'] not in albums:
+            albums.append(element["album"])
+    return jsonify({'data':albums,'status':200})
 
 
-@app.route("/album/<name>")  #delete
+@app.route("/album/<name>", methods=['DELETE', 'GET'])  #delete
 @token_required
 def albumId(name):
-    token = request.headers.get("X-Access-Token")
-    decodetoken = jwt.decode(token,
-                             app.config['SECRET_KEY'],
-                             algorithms=['HS256'])
-    confirmation = deleteAlbum(decodetoken['user'], name)
-    if confirmation:
-        return jsonify({'data': 'success', 'status': 200})
-    return jsonify({'data': 'error deleting album', 'status': 403})
+    if request.method == "DELETE":
+        token = request.headers.get("X-Access-Token")
+        decodetoken = jwt.decode(token,
+                                app.config['SECRET_KEY'],
+                                algorithms=['HS256'])
+        confirmation = deleteAlbum(decodetoken['user'], name)
+        if confirmation:
+            return jsonify({'data': 'success', 'status': 200})
+        return jsonify({'data': 'error deleting album', 'status': 403})
+    elif request.method == "GET":
+        token = request.headers.get("X-Access-Token")
+        data = jwt.decode(token,
+                          app.config['SECRET_KEY'],
+                          algorithms=['HS256'])
+        usuario = get_user(data["user"])
+        photos = usuario.photos
+        retorno = []
+        for element in photos:
+            if element.album == name:
+                del(element.username)
+                nombre = str(element.url,).split(sep='/')
+                element.name = nombre[-1]
+                retorno.append(element.__dict__)
+        return jsonify({'data':retorno,'status':200})
+
+    return jsonify({'data':'erro at DELETE or GET', 'status':403})
 
 
 if __name__ == "__main__":

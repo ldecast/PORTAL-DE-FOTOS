@@ -181,16 +181,49 @@ def uploadPhoto(username: str, albumName: str, base64_photo: str,
     return True
 
 
+# ACTUALIZAR FOTO 
+def updatePhoto(url:str,album:str,photo:str,username:str):
+    user = get_user(username)
+    oldPhoto = Photo('','','')
+    for element in user.photos:
+        if element.url == url:
+            oldPhoto = element
+            break
+    copy_source = {'Bucket': bucket_name, 'Key': oldPhoto.getUrl()}
+    if photo == '':
+        photo = oldPhoto.getFilename()
+    if album == '':
+        album = oldPhoto.getAlbumName()
+    new_url_old_photo = "Fotos_Publicadas/" + username + "/" + album+"/"+photo
+    client_s3.copy(copy_source,bucket_name,new_url_old_photo)
+    deletePhoto(username,url)
+    item_photos = {
+        'PhotoURL': {
+            'S': new_url_old_photo
+        },
+        'AlbumName': {
+            'S': album
+        },
+        'Username': {
+            'S': username
+        }
+    }
+    client_dynamodb.put_item(TableName=table_photos['Name'], Item=item_photos)
+    return True
+
+
+
 # ACTUALIZAR LA FOTO DE PERFIL
 def updateProfilePhoto(__username: str, new_b64_profile_photo: str,
                        new_filename_photo: str) -> bool:
     # Obtener el usuario
     user = get_user(__username)
     old_photo = user.getProfilePhoto()
-    new_url_old_photo = "Fotos_Perfil/" + __username + "/" + old_photo.getFilename(
-    )
+    new_url_old_photo = "Fotos_Perfil/" + __username + "/" + old_photo.getFilename()
     copy_source = {'Bucket': bucket_name, 'Key': old_photo.getUrl()}
     # Copiar a la carpeta común
+
+    print(copy_source, bucket_name,new_url_old_photo,'datos')
     client_s3.copy(copy_source, bucket_name, new_url_old_photo)
     # Eliminar la que estaba en /actual
     client_s3.delete_object(Bucket=bucket_name, Key=old_photo.getUrl())

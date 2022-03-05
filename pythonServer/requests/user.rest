@@ -1,3 +1,3 @@
 GET http://localhost:5000/user
 content-Type: application/json
-X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoianByb2phcyIsImV4cCI6MTY0NjM2OTQzMX0.GLhTyALYjpDTB29gvQNRk6_jgTUt3qBdIQgnI1D9CyM
+X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDYzNjk1Nzd9.dwiwS9Ppv9HQwgn-VdtgROha8BZ6uzCktO-lwReNuDE
