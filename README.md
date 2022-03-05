@@ -1,7 +1,7 @@
 # FaunaDex
 Práctica 1 del curso Seminario de Sistemas 1
 
-## Integrantes
+## Integrantes (G10)
 | Nombre                        | Carnet    | Usuario                                 |
 | ----------------------------- | --------- | --------------------------------------- |
 | Pablo Fernando Cabrera Pineda | 201901698 | [pabloc54](https://github.com/pabloc54) |
