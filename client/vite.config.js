@@ -8,6 +8,10 @@ export default defineConfig(({ mode }) => ({
       jsxRuntime: 'classic'
     })
   ],
+  build: {
+    emptyOutDir: true,
+    outDir: '../dist'
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
