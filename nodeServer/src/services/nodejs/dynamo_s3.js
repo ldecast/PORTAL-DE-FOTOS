@@ -52,7 +52,7 @@ function add_user(username, password, fullname, base64_photo, filename_photo) {
                 const url = "Fotos_Perfil/" + username + "/actual/" + filename_photo
                 const item_photos = {
                     PhotoURL: url,
-                    AlbumName: "Fotos de Perfil",
+                    AlbumName: "Fotos_Perfil",
                     Username: username
                 }
                 //console.log("Adding user:", item_users);
@@ -269,7 +269,7 @@ function updateProfilePhoto(__username, new_b64_profile_photo, new_filename_phot
                                         let new_url = "Fotos_Perfil/" + __username + "/actual/" + new_filename_photo;
                                         let item_photos = {
                                             PhotoURL: new_url,
-                                            AlbumName: "Fotos de Perfil",
+                                            AlbumName: "Fotos_Perfil",
                                             Username: __username
                                         };
                                         let b64_decode = new Buffer.from(new_b64_profile_photo, 'base64');
@@ -456,7 +456,7 @@ function get_user2(__username) {
 /* ELIMINAR UN ALBUM (No se debe poder eliminar el album de fotos de perfil) */
 function deleteAlbum(username, albumName) {
     return new Promise((resolve, reject) => {
-        if(albumName=="Fotos de Perfil") return resolve(returnErr("No se puede borrar ese album"))
+        if(albumName=="Fotos_Perfil") return resolve(returnErr("No se puede borrar ese album"))
         get_user2(username).then((user)=>{
             if(!user) return resolve(returnErr("No se encontro el usuario"))
             if(!(user instanceof UserDB)) return resolve(returnErr("No se encontro el usuario"))

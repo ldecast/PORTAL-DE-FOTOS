@@ -6,8 +6,9 @@ const DynamoDB = require('../services/nodejs/dynamo_s3')
 
 // Hola mundo 
 module.exports.holaMundo = async function (request, response) {
+    console.log(makeRandom())
     response.status(200).json({
-        mensaje: 'token valido'
+        mensaje: 'hola jeje'
     })
 
 }
@@ -95,7 +96,7 @@ module.exports.updateUser = async function (request, response, next) {
         }
         if (cambio_de_foto) {
             let foto = request.body.data.photo
-            resultado_cambio=await DynamoDB.updateProfilePhoto(decodificado.user,foto.photo,foto.name)
+            resultado_cambio=await DynamoDB.updateProfilePhoto(decodificado.user,foto.photo,makeRandom())
             if (!resultado_cambio) {
                 return response.status(400).json({data:'No se pudo actualizar la foto',status:400})
             }
@@ -127,6 +128,19 @@ module.exports.updateUser = async function (request, response, next) {
         return response.status(400).json({data:'Error inesperado',status: 400});
     }
 }
+// cadena random para nombre de foto de perfil
+function makeRandom() {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < 13; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * 
+ charactersLength));
+   }
+   console.log(result)
+   return result;
+}
+
 // POST PHOTO Endpoint para subir una foto.
 module.exports.uploadPhoto  = async function (request, response) {
     try {

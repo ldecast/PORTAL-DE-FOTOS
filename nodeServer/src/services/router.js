@@ -4,7 +4,7 @@ const controller = require('../controllers/controller')
 const midelWare = require('../services/midelwate')
 
 // ----------- RUTAS TERMINADAS ---------------
-router.get('/',midelWare.verify,controller.holaMundo)
+router.get('/',controller.holaMundo)
 router.post('/login',controller.login)
 router.get('/user',midelWare.verify,controller.getUser)
 router.post('/user',controller.addUser)
