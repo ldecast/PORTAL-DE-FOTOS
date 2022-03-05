@@ -42,7 +42,7 @@ function UpdateUserPage() {
       name,
       user,
       password,
-      photo: filterBase64(selectedPhoto)
+      photo: selectedPhoto ? { photo: filterBase64(selectedPhoto) } : null
     }
 
     updateUser(newUser)
