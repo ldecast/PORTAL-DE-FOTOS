@@ -1,7 +1,7 @@
 import camera from '@assets/camera.svg'
 import { Button, Grid, Input, Text } from '@nextui-org/react'
 import { useAtom } from 'jotai'
-import { useState } from 'react/cjs/react.development'
+import { useState } from 'react'
 import { toast } from 'react-toastify'
 import Webcam from 'react-webcam'
 
