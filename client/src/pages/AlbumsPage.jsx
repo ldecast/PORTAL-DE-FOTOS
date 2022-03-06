@@ -4,10 +4,11 @@ import { toast } from 'react-toastify'
 
 import Select from '@/components/Select'
 import { deleteAlbum } from '@/services/albumServices'
-import { albumsAtom } from '@/state'
+import { albumsAtom, userAtom } from '@/state'
 import css from '@/styles/AlbumsPage.module.css'
 
 function AlbumsPage() {
+  const [user, setUser] = useAtom(userAtom)
   const [albums, setAlbums] = useAtom(albumsAtom)
 
   const handleSubmit = (e) => {
@@ -20,8 +21,11 @@ function AlbumsPage() {
     deleteAlbum(album)
       .then(() => {
         const newAlbums = albums.filter((a) => a !== album)
+        const newUser = { ...user, photos: user.photos.filter((p) => p.album !== album) }
+        console.log(newUser)
 
         setAlbums(newAlbums)
+        setUser(newUser)
         toast.success('Álbum eliminado exitosamente')
       })
       .catch((err) => {

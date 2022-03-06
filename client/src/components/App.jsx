@@ -49,7 +49,7 @@ function App() {
         toast.error('Se ha cerrado tu sesión')
 
         const newUser = {
-          isLoggedIn: true,
+          isLoggedIn: false,
           ...emptyUser
         }
         setUser(newUser)
