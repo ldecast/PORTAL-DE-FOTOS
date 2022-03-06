@@ -1,62 +1,60 @@
-import { Button, Grid, Input, Text } from '@nextui-org/react'
+import { Button, Container, Grid, Text } from '@nextui-org/react'
 import { useAtom } from 'jotai'
+import { toast } from 'react-toastify'
 
-import Photo from '@/components/Photo'
-import { updateUser } from '@/services/userServices'
-import { emptyUser, userAtom } from '@/state'
+import Select from '@/components/Select'
+import { deleteAlbum } from '@/services/albumServices'
+import { albumsAtom } from '@/state'
 import css from '@/styles/AlbumsPage.module.css'
 
 function AlbumsPage() {
-  const [User, setUser] = useAtom(userAtom)
-  const { user, name } = User
+  const [albums, setAlbums] = useAtom(albumsAtom)
 
-  const handleLogout = () => {
-    localStorage.removeItem('faunaToken')
-    const newUser = { ...emptyUser, isLoggedIn: false }
-    setUser(newUser)
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    const data = new FormData(e.target)
+    const album = data.get('album')
+
+    if (!album) return toast.error('Por favor selecciona un álbum a eliminar')
+
+    deleteAlbum(album)
+      .then(() => {
+        const newAlbums = albums.filter((a) => a !== album)
+
+        setAlbums(newAlbums)
+        toast.success('Álbum eliminado exitosamente')
+      })
+      .catch((err) => {
+        console.log(err)
+        toast.error('Error al eliminar el álbum')
+      })
   }
 
+  const filteredAlbums = albums.filter((album) => album !== 'Fotos de Perfil')
+
   return (
-    <Grid.Container gap={2} className={css.base}>
-      <Grid xs={12}>
-        <Grid.Container gap={2} className={css.header} alignItems='center'>
-          <Grid xs={8}>
-            <Text h1>Datos personales</Text>
+    <div className={css.base}>
+      <form onSubmit={handleSubmit}>
+        <Grid.Container gap={3}>
+          <Grid xs={12}>
+            <Container>
+              <Text h1>Edita tus álbumes</Text>
+            </Container>
           </Grid>
-          <Grid xs={4}>
-            <Button bordered color='error' type='button' onClick={handleLogout}>
-              Cerrar sesión
+          <Grid xs={12}>
+            <Text small>Álbum</Text>
+          </Grid>
+          <Grid xs={12}>
+            <Select name='album' options={filteredAlbums} />
+          </Grid>
+          <Grid xs={12} sm={6}>
+            <Button type='submit' color='error'>
+              Eliminar álbum
             </Button>
           </Grid>
         </Grid.Container>
-      </Grid>
-      <Grid xs={12}>
-        <Grid.Container gap={2}>
-          <Grid xs={12} sm={6}>
-            <Input
-              fullWidth
-              required
-              readOnly
-              id='user'
-              name='user'
-              label='Nombre de usuario'
-              value={user}
-            />
-          </Grid>
-          <Grid xs={12} sm={6}>
-            <Input
-              fullWidth
-              required
-              readOnly
-              id='name'
-              name='name'
-              label='Nombre completo'
-              value={name}
-            />
-          </Grid>
-        </Grid.Container>
-      </Grid>
-    </Grid.Container>
+      </form>
+    </div>
   )
 }
 

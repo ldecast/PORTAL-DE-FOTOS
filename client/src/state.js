@@ -1,8 +1,8 @@
 import { atom } from 'jotai'
 
 export const emptyUser = {
-  user: undefined,
-  name: undefined,
+  user: 'cargando...',
+  name: 'cargando...',
   photo: undefined,
   photos: []
 }

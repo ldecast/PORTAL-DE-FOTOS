@@ -1,9 +1,11 @@
 import { useState } from 'react'
 
+import { composeBase64 } from '@/helpers/base64'
 import css from '@/styles/Photo.module.css'
 
-function Photo({ url, name }) {
-  const image = `http://s3.amazonaws.com/practica1.g10.imagenes/${url}`
+function Photo({ name, photo, url }) {
+  const image =
+    composeBase64(photo) || `http://s3.amazonaws.com/practica1.g10.imagenes/${url}`
   const [previewing, setPreviewing] = useState(false)
 
   const toggleViewing = () => setPreviewing(!previewing)

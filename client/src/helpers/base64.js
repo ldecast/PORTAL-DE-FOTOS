@@ -12,6 +12,7 @@ export const filterBase64 = (base64) => {
 }
 
 export const composeBase64 = (base64) => {
+  if (!base64) return null
   const base64Data = `data:image/jpeg;base64,${base64}`
   return base64Data
 }

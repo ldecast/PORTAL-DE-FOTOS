@@ -9,13 +9,44 @@ function PhotosPage() {
   const [User] = useAtom(userAtom)
   const { user, photos } = User
 
+  const albums = []
+
+  for (let photo of photos) {
+    if (!albums.find((album) => album.name === photo.album))
+      albums.push({
+        name: photo.album,
+        photos: []
+      })
+
+    albums.find((album) => album.name === photo.album).photos.push(photo)
+  }
+
   return (
     <Grid.Container gap={2} className={css.base}>
-      {photos.map((photo) => (
-        <Grid key={photo.name} xs={12}>
-          <p>{photo.name}</p>
-          <p>{photo.album}</p>
-          <Photo {...photo} />
+      {albums.map((album, i) => (
+        <Grid key={i} xs={12}>
+          <Grid.Container gap={2}>
+            <Grid xs={12}>
+              <h2>{album.name}</h2>
+            </Grid>
+            {!album.photos.length && (
+              <Grid xs={12}>
+                <p>No hay fotos en este album</p>
+              </Grid>
+            )}
+            {album.photos.map((photo, j) => (
+              <Grid key={j} xs={4} sm={3} md={2} lg={2}>
+                <Grid.Container>
+                  <Grid xs={12}>
+                    <Photo {...photo} />
+                  </Grid>
+                  <Grid xs={12}>
+                    <p>{photo.name}</p>
+                  </Grid>
+                </Grid.Container>
+              </Grid>
+            ))}
+          </Grid.Container>
         </Grid>
       ))}
     </Grid.Container>

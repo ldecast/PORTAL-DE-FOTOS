@@ -5,5 +5,5 @@ export const getAlbums = () => {
 }
 
 export const deleteAlbum = (album) => {
-  return request('DELETE', '/album', album)
+  return request('DELETE', `/album/${album}`)
 }

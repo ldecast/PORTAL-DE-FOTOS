@@ -13,9 +13,9 @@ import { userAtom } from '@/state'
 import css from '@/styles/UpdateUserPage.module.css'
 
 function UpdateUserPage() {
-  const [location, setLocation] = useLocation()
+  const [, setLocation] = useLocation()
   const [User, setUser] = useAtom(userAtom)
-  const { user, name, password, photo } = User
+  const { user, name } = User
 
   const {
     selectedPhoto,

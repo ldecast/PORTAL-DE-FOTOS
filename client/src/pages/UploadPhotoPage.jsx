@@ -1,5 +1,5 @@
 import camera from '@assets/camera.svg'
-import { Button, Grid, Input, Text } from '@nextui-org/react'
+import { Button, Container, Grid, Input, Text } from '@nextui-org/react'
 import { useAtom } from 'jotai'
 import { useState } from 'react'
 import { toast } from 'react-toastify'
@@ -15,7 +15,7 @@ import css from '@/styles/UploadPhotoPage.module.css'
 function UploadPhotoPage() {
   const [creatingAlbum, setCreatingAlbum] = useState(false)
   const [user, setUser] = useAtom(userAtom)
-  const [albums] = useAtom(albumsAtom)
+  const [albums, setAlbums] = useAtom(albumsAtom)
 
   const {
     selectedPhoto,
@@ -27,9 +27,7 @@ function UploadPhotoPage() {
 
   const handleSelectAlbum = (e) => {
     const album = e.target.value
-    console.log(album)
-
-    setCreatingAlbum(album === 'Nuevo')
+    setCreatingAlbum(album === 'Nuevo álbum')
   }
 
   const handleSubmit = (e) => {
@@ -39,7 +37,7 @@ function UploadPhotoPage() {
     const album = data.get('album')
     const newAlbum = data.get('newAlbum')
 
-    if (!name) return toast.error('Por favor ingresa un nombre para el album')
+    if (!name) return toast.error('Por favor ingresa un nombre para la foto')
 
     if (!selectedPhoto || selectedPhoto === 'pending')
       return toast.error('Por favor toma o selecciona una foto')
@@ -56,15 +54,20 @@ function UploadPhotoPage() {
     }
 
     uploadPhoto(photo)
-      .then(({ data }) => {
-        console.log(data)
+      .then(() => {
+        const newPhoto = photo.photo
+
         setUser({
           ...user,
-          photos: [...user.photos, data.photo]
+          photos: [...user.photos, newPhoto]
         })
+
+        if (creatingAlbum) setAlbums([...albums, photo.photo.album])
+
         toast.success('Foto subida correctamente')
       })
       .catch((err) => {
+        toast.error('Error al subir la foto')
         console.log(err)
       })
   }
@@ -73,6 +76,11 @@ function UploadPhotoPage() {
     <div className={css.base}>
       <form onSubmit={handleSubmit}>
         <Grid.Container gap={2}>
+          <Grid xs={12}>
+            <Container>
+              <Text h1>Sube una foto</Text>
+            </Container>
+          </Grid>
           <Grid xs={12} sm={12} className={css.photo}>
             {selectedPhoto === 'pending' ? (
               <Grid.Container gap={2}>
@@ -112,7 +120,7 @@ function UploadPhotoPage() {
               <Grid xs={12}>
                 <Select
                   name='album'
-                  options={[...albums, 'Nuevo']}
+                  options={[...albums, 'Nuevo álbum']}
                   onChange={handleSelectAlbum}
                 />
               </Grid>

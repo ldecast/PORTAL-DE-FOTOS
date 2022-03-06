@@ -15,7 +15,7 @@ import UpdateUserPage from '@/pages/UpdateUserPage'
 import UploadPhotoPage from '@/pages/UploadPhotoPage'
 import { getAlbums } from '@/services/albumServices'
 import { getUser } from '@/services/userServices'
-import { albumsAtom, userAtom } from '@/state'
+import { albumsAtom, emptyUser, userAtom } from '@/state'
 import css from '@/styles/App.module.css'
 
 function App() {
@@ -28,7 +28,6 @@ function App() {
     const token = localStorage.getItem('faunaToken')
 
     if (!token) return
-    if (token === 'undefined') return toast.error(`Token inválido: ${token}`)
 
     getUser()
       .then((user) => {
@@ -37,17 +36,23 @@ function App() {
           ...user
         }
         setUser(newUser)
-      })
-      .catch((err) => {
-        console.log(err)
-        toast.error('Error al obtener el usuario')
-      })
 
-    getAlbums()
-      .then(setAlbums)
+        getAlbums()
+          .then(setAlbums)
+          .catch((err) => {
+            console.log(err)
+            toast.error('Error al obtener los álbumes. Por favor recarga la página.')
+          })
+      })
       .catch((err) => {
         console.log(err)
-        toast.error('Error al obtener los álbumes')
+        toast.error('Se ha cerrado tu sesión')
+
+        const newUser = {
+          isLoggedIn: true,
+          ...emptyUser
+        }
+        setUser(newUser)
       })
   }, [isLoggedIn])
 

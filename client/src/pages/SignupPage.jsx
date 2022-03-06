@@ -28,7 +28,6 @@ function SignupPage() {
     const password = data.get('password')
     const confirmPassword = data.get('confirmPassword')
     const name = data.get('name')
-    console.log(selectedPhoto)
 
     if (!selectedPhoto || selectedPhoto === 'pending')
       return toast.error('Por favor toma o selecciona una foto')
