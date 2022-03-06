@@ -17,7 +17,6 @@ from functools import wraps
 from storage.dynamo_s3 import *
 
 app = Flask(__name__)
-app.debug = True
 app.config['SECRET_KEY'] = 'seminario10'
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 CORS(app)
@@ -248,9 +247,10 @@ def albumId(name):
     return jsonify({'data':'erro at DELETE or GET', 'status':403})
 
 
-if __name__ == "__main__":
+if __name__=='__main__':
+    from waitress import serve
     s3 = connectBucketS3()
     dynamo = connectDynamoDB()
     print(s3)
     print(dynamo)
-    app.run(port=5000)
+    serve(app,port=5000)

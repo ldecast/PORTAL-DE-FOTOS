@@ -1,3 +1,5 @@
+GET http://localhost:5000/ HTTP/1.1
+###
 POST http://localhost:5000/login HTTP/1.1
 content-type: application/json
 
@@ -11,16 +13,16 @@ content-type: application/json
 ###
 GET http://localhost:5000/user
 content-Type: application/json
-X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDY0NTM5ODl9.T_qn0WBS2mUA6Toda6ikmpMzinQzAXBJ7Cfwf7_lbxE
+X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDY0NjQwNDR9.pE88ESCwIj3FqQlPm9ATTVSxT3lmng-NiLMGGUlTxRc
 
 ###
 GET http://localhost:5000/album
 Content-Type: application/json
-X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDY0NTM5ODl9.T_qn0WBS2mUA6Toda6ikmpMzinQzAXBJ7Cfwf7_lbxE
+X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDY0NjQwNDR9.pE88ESCwIj3FqQlPm9ATTVSxT3lmng-NiLMGGUlTxRc
 ###
 PUT http://localhost:5000/user
 Content-Type: application/json
-X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDY0NTM5ODl9.T_qn0WBS2mUA6Toda6ikmpMzinQzAXBJ7Cfwf7_lbxE
+X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDY0NjQwNDR9.pE88ESCwIj3FqQlPm9ATTVSxT3lmng-NiLMGGUlTxRc
 
 {
     "data":{
@@ -38,7 +40,7 @@ X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJ
 ###
 POST http://localhost:5000/photo
 Content-Type: application/json
-X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDY0NTM5ODl9.T_qn0WBS2mUA6Toda6ikmpMzinQzAXBJ7Cfwf7_lbxE
+X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDY0NjQwNDR9.pE88ESCwIj3FqQlPm9ATTVSxT3lmng-NiLMGGUlTxRc
 
 {
     "data": {
@@ -53,7 +55,7 @@ X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJ
 ###
 DELETE http://localhost:5000/photo
 Content-Type: application/json
-X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDY0NTM5ODl9.T_qn0WBS2mUA6Toda6ikmpMzinQzAXBJ7Cfwf7_lbxE
+X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDY0NjQwNDR9.pE88ESCwIj3FqQlPm9ATTVSxT3lmng-NiLMGGUlTxRc
 
 {
     "data":{
@@ -66,18 +68,18 @@ X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJ
 ###
 DELETE http://localhost:5000/album/albumBorrar
 Content-Type: application/json
-X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDY0NTM5ODl9.T_qn0WBS2mUA6Toda6ikmpMzinQzAXBJ7Cfwf7_lbxE
+X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDY0NjQwNDR9.pE88ESCwIj3FqQlPm9ATTVSxT3lmng-NiLMGGUlTxRc
 
 ###
 GET http://localhost:5000/album/albumBorrar
 Content-Type: application/json
-X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDY0NTM5ODl9.T_qn0WBS2mUA6Toda6ikmpMzinQzAXBJ7Cfwf7_lbxE
+X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDY0NjQwNDR9.pE88ESCwIj3FqQlPm9ATTVSxT3lmng-NiLMGGUlTxRc
 
 ###
 
 PUT http://localhost:5000/photo
 Content-Type: application/json
-X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDY0NTM5ODl9.T_qn0WBS2mUA6Toda6ikmpMzinQzAXBJ7Cfwf7_lbxE
+X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJleHAiOjE2NDY0NjQwNDR9.pE88ESCwIj3FqQlPm9ATTVSxT3lmng-NiLMGGUlTxRc
 
 {
     "data": {
