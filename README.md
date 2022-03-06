@@ -12,3 +12,5 @@ Práctica 1 del curso Seminario de Sistemas 1
 
 ## Documentación
 - [Manual técnico](docs/technical.md)
+
+[Ir al deploy](http://practica1.g10.paginaweb.s3-website-us-west-2.amazonaws.com)
