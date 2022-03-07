@@ -14,3 +14,4 @@ Práctica 1 del curso Seminario de Sistemas 1
 
 ## Documentación
 - [Manual técnico](docs/technical.md)
+- [Manual de configuración](docs/conf.md)
