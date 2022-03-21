@@ -19,12 +19,13 @@
 {
   "url": string,
   "photo": string,
-  "album": string,
-  "name": string
+  "tags": string[],
+  "name": string,
+  "description": string
 }
 ```
-- El url es un enlace dentro del S3.
-- Photo es la imagen en base64
+- El atributo url es un enlace dentro del S3.
+- El atributo photo es la imagen en base64
 - La foto debe ser un string en base64 del lado del cliente, y un enlace a la foto en la base de datos.
 
 ## Token
@@ -42,7 +43,7 @@ Se utilizan Json Web Tokens para autenticar las peticiones usuario.
 
 ## Endpoints
 ### POST /login
-Endpoint para el inicio de sesión.
+Endpoint para el inicio de sesión. Se valida si se envía la contraseña del usuario o la foto para detectar el tipo de inicio de sesión.
 
 #### Body
 ```js
@@ -104,7 +105,14 @@ Endpoint para subir una foto.
 #### Body
 ```js
 {
-  "data": Photo,
+  "data": Photo
+}
+```
+
+#### Retorno
+```js
+{
+  "data": Error,
   "status"
 }
 ```
@@ -160,3 +168,61 @@ Endpoint para eliminar un álbum.
   "status"
 }
 ```
+
+### POST /text
+Endpoint para reconocimiento de texto en fotos. Se envía una imagen en base64.
+
+#### Body
+```js
+{
+  "data": string
+}
+```
+
+#### Retorno
+```js
+{
+  "data": string | Error,
+  "status"
+}
+```
+
+### POST /translate
+Endpoint para traducción de texto. El idioma de origen es automático y los de destino son inglés (en), español (es) y francés (fr).
+
+#### Body
+```js
+{
+  "data": {
+    "text": string,
+    "language": string
+  }
+}
+```
+
+#### Retorno
+```js
+{
+  "data": string | Error,
+  "status"
+}
+```
+
+### POST /chat
+Endpoint para utilización de chatbot.
+
+#### Body
+```js
+{
+  "data": string
+}
+```
+
+#### Retorno
+```js
+{
+  "data": string[] | Error,
+  "status"
+}
+```
+
