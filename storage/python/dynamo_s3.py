@@ -14,6 +14,7 @@ REGION_NAME = os.getenv('REGION_NAME')
 
 client_dynamodb = None
 client_s3 = None
+client_rekognition = None
 
 table_users = {
     'Name': 'Users',
@@ -22,39 +23,33 @@ table_users = {
 
 table_photos = {
     'Name': 'Photos',
-    'Attributes': ['PhotoURL', 'AlbumName', 'Username']
+    'Attributes': ['PhotoURL', 'Tags', 'Username']
 }
 
 bucket_name = "practica1.g10.imagenes"
 
 
-# CONECTAR A LA BASE DE DATOS
-def connectDynamoDB() -> bool:
+def connect_AWS_Services() -> bool:
     try:
+        # CONECTAR A LA BASE DE DATOS
         global client_dynamodb
         client_dynamodb = boto3.client('dynamodb', aws_access_key_id=ACCESS_KEY_ID,
                                        aws_secret_access_key=SECRET_ACCESS_KEY, region_name=REGION_NAME)
-    except:
-        print("Something went wrong connecting the client")
-        return False
-    else:
-        print("DynamoDB client connected!")
-        return True
-
-
-# CONECTAR A BUCKET S3 DE IMAGENES
-def connectBucketS3() -> bool:
-    try:
+        # CONECTAR A BUCKET S3 DE IMAGENES
         global client_s3
         client_s3 = boto3.client('s3',
                                  aws_access_key_id=ACCESS_KEY_ID,
                                  aws_secret_access_key=SECRET_ACCESS_KEY,
                                  region_name=REGION_NAME)
+        # CONECTAR A REKOGNITION
+        global client_rekognition
+        client_rekognition = boto3.client('rekognition', aws_access_key_id=ACCESS_KEY_ID,
+                                          aws_secret_access_key=SECRET_ACCESS_KEY, region_name=REGION_NAME)
     except:
-        print("Something went wrong connecting the S3 client")
+        print("Something went wrong connecting with AWS Services")
         return False
     else:
-        print("S3 client connected!")
+        print("AWS Services running!")
         return True
 
 
@@ -73,7 +68,8 @@ def add_user(username: str, password: str, fullname: str, base64_photo: str, fil
     url = "Fotos_Perfil/"+username+"/actual/"+filename_photo
     item_photos = {
         'PhotoURL': {'S': url},
-        'AlbumName': {'S': "Fotos de Perfil"},
+        # TODO Agregar extracción de etiquetas de la foto de perfil
+        'Tags': {'SS': ["Person", "Human"]},
         'Username': {'S': username}
     }
     try:
@@ -98,7 +94,7 @@ def add_user(username: str, password: str, fullname: str, base64_photo: str, fil
 
 
 # VERIFICAR LOGIN
-def login_user(username: str, password: str) -> bool:
+def login_user(username: str, password: str, photo: str) -> bool:
     key = {
         'Username': {'S': username}
     }
@@ -106,12 +102,19 @@ def login_user(username: str, password: str) -> bool:
     if 'Item' not in user:
         print("The user doesn't exists")
         return False
-    password_db = user['Item']['Password']['S']
-    if password_db == password:  # Ambas password deben estar en md5
-        print("Login is correct")
-        return True
-    print("The password is incorrect")
-    return False
+    if password:
+        password_db = user['Item']['Password']['S']
+        if password_db == password:  # Ambas password deben estar en md5
+            print("Login is correct")
+            return True
+        print("The password is incorrect")
+        return False
+    elif photo:
+        # Insertar reconocimiento facial
+        pass
+    else:
+        print("Password or photo must be provided.")
+        return False
 
 
 # OBTENER TODA LA DATA DE UN USUARIO
@@ -130,21 +133,35 @@ def get_user(__username: str) -> UserDB:
         TableName=table_photos['Name'], FilterExpression='Username=:name', ExpressionAttributeValues={":name": key['Username']})
     for photo in photos_db['Items']:
         url = photo['PhotoURL']['S']
-        albumName = photo['AlbumName']['S']
-        user_response.addPhoto(url, albumName)
+        tags = photo['Tags']['SS']
+        user_response.addPhoto(url, tags)
     # print(user_response)
     return user_response
 
 
-# SUBIR FOTO A ALBUM DE USUARIO (PARA CREAR UN ALBUM ES NECESARIO SUBIR UNA FOTO)
-def uploadPhoto(username: str, albumName: str, base64_photo: str, filename_photo: str):
-    url = "Fotos_Publicadas/"+username+"/"+albumName+"/"+filename_photo
+# OBTENER LAS ETIQUETAS DE UNA FOTO
+def getPhotoLabels(b64_decode: bytes):
+    image = {'Bytes': b64_decode}
+    maxLabels = 5
+    response = client_rekognition.detect_labels(
+        Image=image, MaxLabels=maxLabels
+    )
+    labels = []
+    for label in response['Labels']:
+        labels.append(label['Name'])
+    # print(labels)
+    return labels
+
+
+# SUBIR FOTO Y ALMACENAR SUS ETIQUETAS
+def uploadPhoto(username: str, base64_photo: str, filename_photo: str):
+    url = "Fotos_Publicadas/"+username+"/"+filename_photo
+    b64_decode = base64.b64decode(base64_photo)
     item_photos = {
         'PhotoURL': {'S': url},
-        'AlbumName': {'S': albumName},
+        'Tags': {'SS': getPhotoLabels(b64_decode)},
         'Username': {'S': username}
     }
-    b64_decode = base64.b64decode(base64_photo)
     # Insertar ruta en Dynamo
     client_dynamodb.put_item(
         TableName=table_photos['Name'], Item=item_photos)
@@ -177,12 +194,12 @@ def updateProfilePhoto(__username: str, new_b64_profile_photo: str, new_filename
     )
     # Cargar la nueva en /actual
     new_url = "Fotos_Perfil/"+__username+"/actual/"+new_filename_photo
+    b64_decode = base64.b64decode(new_b64_profile_photo)
     item_photos = {
         'PhotoURL': {'S': new_url},
-        'AlbumName': {'S': "Fotos de Perfil"},
+        'Tags': {'SS': getPhotoLabels(b64_decode)},
         'Username': {'S': __username}
     }
-    b64_decode = base64.b64decode(new_b64_profile_photo)
     # Guardar la foto en bucket
     client_s3.upload_fileobj(io.BytesIO(b64_decode), bucket_name, new_url,
                              ExtraArgs={'ContentType': "image"})
@@ -234,7 +251,7 @@ def updateUsername_URLS(old_user: UserDB, new_username: str):
     # Actualizar en el Bucket S3
     for old_photo in old_user.getPhotos():
         new_photo = Photo(
-            old_photo.getUrl(), old_photo.getAlbumName(), old_photo.getUsername()
+            old_photo.getUrl(), old_photo.getTags, old_photo.getUsername()
         )
         new_photo.changeUsername(new_username)
         copy_source = {
@@ -255,7 +272,7 @@ def updateUsername_URLS(old_user: UserDB, new_username: str):
         # Insertar ruta en Dynamo
         item_photos = {
             'PhotoURL': {'S': new_photo.getUrl()},
-            'AlbumName': {'S': new_photo.getAlbumName()},
+            'Tags': {'SS': new_photo.getTags()},
             'Username': {'S': new_photo.getUsername()}
         }
         client_dynamodb.put_item(
@@ -271,29 +288,7 @@ def updateUsername_URLS(old_user: UserDB, new_username: str):
         )
 
 
-# ELIMINAR UN ALBUM (No se debe poder eliminar el album de fotos de perfil)
-def deleteAlbum(username: str, albumName: str) -> bool:
-    user = get_user(username)
-    for photo in user.getPhotos():
-        if photo.getAlbumName() == albumName:
-            # Eliminar en bucket S3
-            client_s3.delete_object(
-                Bucket=bucket_name,
-                Key=photo.getUrl()
-            )
-            # Eliminar en DynamoDB
-            key = {
-                'PhotoURL': {'S': photo.getUrl()},
-                'Username': {'S': photo.getUsername()}
-            }
-            client_dynamodb.delete_item(
-                TableName=table_photos['Name'],
-                Key=key
-            )
-    return True
-
-
-# ELIMINAR UNA FOTO DEL ALBUM
+# ELIMINAR UNA FOTO
 def deletePhoto(username: str, URL_photo: str) -> bool:
     # Eliminar en bucket S3
     client_s3.delete_object(
@@ -321,13 +316,15 @@ def getBase64(path: str) -> str:
 
 
 if __name__ == '__main__':
-    if connectDynamoDB() and connectBucketS3():
-        # add_user("luisd", "0000", "Luis Danniel Castellanos", getBase64('../testing/perfil1.txt'), "img1.jpg")
+    if connect_AWS_Services():
+        # add_user("luisd", "0000", "Luis Danniel Castellanos",
+        #          getBase64('../testing/perfil1.txt'), "img1.jpg")
         # updateUser("luisd", "0000", "ldecast", "Luis Danniel Ernesto Castellanos Galindo")
-        # uploadPhoto('ldecast', 'Pensums', getBase64('../testing/industrial.txt'), 'Industrial.jpg')
+        uploadPhoto('luisd', getBase64(
+            '../testing/sistemas.txt'), 'Sistemas.jpg')
         # updateProfilePhoto("ldecast", getBase64('../testing/perfil2.txt'), 'img2.jpg')
         # add_user("luisd", "1234", "LuisDa", getBase64('../testing/perfil1.txt'), "hola.jpg")
         # deleteAlbum('ldecast','Pensums')
         # deletePhoto('ldecast','Fotos_Perfil/ldecast/img1.jpg')
-        # get_user('ldecast')
+        # get_user('luisd')
         pass
