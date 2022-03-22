@@ -9,3 +9,13 @@ storage/nodejs/.env
 pythonServer/storage/.env
 
 storage/python/objects/__pycache__/
+
+storage-IA/nodejs/
+
+storage-IA/python/__pycache__/
+
+storage-IA/python/objects/__pycache__/
+
+storage-IA/testing/
+
+storage-IA/python/.env
