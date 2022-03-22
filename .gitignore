@@ -19,3 +19,5 @@ storage-IA/python/objects/__pycache__/
 storage-IA/testing/
 
 storage-IA/python/.env
+
+pythonServer/.env

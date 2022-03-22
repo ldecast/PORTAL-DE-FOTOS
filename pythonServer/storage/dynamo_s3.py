@@ -5,6 +5,7 @@ import boto3  # pip install boto3
 from dotenv import load_dotenv
 import os
 import io
+from storage.rekognition import Compare_faces, getTagsProfilePhoto, translateText
 
 load_dotenv()
 ACCESS_KEY_ID = os.getenv('ACCESS_KEY_ID')
@@ -13,6 +14,8 @@ REGION_NAME = os.getenv('REGION_NAME')
 
 client_dynamodb = None
 client_s3 = None
+client_rekognition = None
+client_translate = None
 
 table_users = {
     'Name': 'Users',
@@ -26,38 +29,39 @@ table_photos = {
 
 bucket_name = "practica1.g10.imagenes"
 
-
-# CONECTAR A LA BASE DE DATOS
-def connectDynamoDB() -> bool:
+def connect_AWS_Services() -> bool:
     try:
         global client_dynamodb
-        print(REGION_NAME)
+        global client_s3
+        global client_rekognition
+        global client_translate
+        # CONECTAR A LA BASE DE DATOS
         client_dynamodb = boto3.client('dynamodb',
-                                       aws_access_key_id=ACCESS_KEY_ID,
-                                       aws_secret_access_key=SECRET_ACCESS_KEY,
-                                       region_name=REGION_NAME)
-    except:
-        print("Something went wrong connecting the client")
-        return None
-    else:
-        print("DynamoDB client connected!")
-        return client_dynamodb
-
-
-# CONECTAR A BUCKET S3 DE IMAGENES
-def connectBucketS3() -> bool:
-    global client_s3
-    try:
+                                                 aws_access_key_id=ACCESS_KEY_ID,
+                                                 aws_secret_access_key=SECRET_ACCESS_KEY,
+                                                 region_name=REGION_NAME)
+        # CONECTAR A BUCKET S3 DE IMAGENES
         client_s3 = boto3.client('s3',
-                                 aws_access_key_id=ACCESS_KEY_ID,
-                                 aws_secret_access_key=SECRET_ACCESS_KEY,
-                                 region_name=REGION_NAME)
+                                           aws_access_key_id=ACCESS_KEY_ID,
+                                           aws_secret_access_key=SECRET_ACCESS_KEY,
+                                           region_name=REGION_NAME)
+        # CONECTAR A REKOGNITION
+        client_rekognition = boto3.client('rekognition',
+                                             aws_access_key_id=ACCESS_KEY_ID,
+                                             aws_secret_access_key=SECRET_ACCESS_KEY,
+                                             region_name=REGION_NAME)
+
+        # CONECTAR A TRANSLATE
+        client_translate = boto3.client('translate',
+                                           aws_access_key_id=ACCESS_KEY_ID,
+                                           aws_secret_access_key=SECRET_ACCESS_KEY,
+                                           region_name=REGION_NAME)
     except:
-        print("Something went wrong connecting the S3 client")
-        return None
+        print("Something went wrong connecting with AWS Services")
+        return False
     else:
-        print("S3 client connected!")
-        return client_s3
+        print("AWS Services running!")
+        return True
 
 
 # REGISTRAR UN USUARIO
@@ -87,12 +91,10 @@ def add_user(username: str, password: str, fullname: str, base64_photo: str,
         'PhotoURL': {
             'S': url
         },
-        'AlbumName': {
-            'S': "Fotos de Perfil"
-        },
+        'Tags': {'SS': getTagsProfilePhoto(base64_photo,client_rekognition)},
         'Username': {
             'S': username
-        }
+        }, 'Description': {'S': 'Primera foto de perfil'}
     }
     try:
         print("Adding user:", item_users)
@@ -137,6 +139,9 @@ def get_user(__username: str) -> UserDB:
     key = {'Username': {'S': __username}}
     # Obtener el usuario
     user_db = client_dynamodb.get_item(TableName=table_users['Name'], Key=key)
+    if 'Item' not in user_db:
+        print("The user doesn't exists")
+        return False
     username = user_db['Item']['Username']['S']
     password = user_db['Item']['Password']['S']
     fullname = user_db['Item']['FullName']['S']
@@ -148,9 +153,9 @@ def get_user(__username: str) -> UserDB:
         ExpressionAttributeValues={":name": key['Username']})
     for photo in photos_db['Items']:
         url = photo['PhotoURL']['S']
-        albumName = photo['AlbumName']['S']
-        user_response.addPhoto(url, albumName)
-    # print(user_response)
+        tags = photo['Tags']['SS']
+        description = photo['Description']['S']
+        user_response.addPhoto(url, tags, description)
     return user_response
 
 
@@ -365,6 +370,15 @@ def deletePhoto(username: str, URL_photo: str) -> bool:
     key = {'PhotoURL': {'S': URL_photo}, 'Username': {'S': username}}
     client_dynamodb.delete_item(TableName=table_photos['Name'], Key=key)
     return True
+
+def translateT(text,destination):
+    return translateText(text,destination,client_translate)
+
+def Compare(profileUser,comparator):
+    return Compare_faces(comparator,client_rekognition,get_user(profileUser))
+
+# def tags(photo):
+#     return getTagsProfilePhoto(photo,client_rekognition)
 
 
 # if __name__ == '__main__':

@@ -1,12 +1,13 @@
 
 class Photo:
-    def __init__(self, url: str, albumName: str, username: str):
+    def __init__(self, url: str, tags: list, username: str, description: str):
         self.url = url
-        self.album = albumName
+        self.tags = tags
         self.username = username
+        self.description = description
 
-    def getAlbumName(self) -> str:
-        return self.album
+    def getTags(self) -> list:
+        return self.tags
 
     def getUsername(self) -> str:
         return self.username
@@ -14,15 +15,20 @@ class Photo:
     def getUrl(self) -> str:
         return self.url
 
-    # De cambiarse el nombre de un album se deberían actualizar todas las rutas de fotos (no lo dice el enunciado)
-    def setAlbumName(self, new_albumName: str):
-        self.album = new_albumName
+    def getDescription(self) -> str:
+        return self.description
+
+    def setTags(self, new_tags: list):
+        self.tags = new_tags
 
     def setUsername(self, new_username: str):
         self.username = new_username
 
     def setUrl(self, new_url: str):
         self.url = new_url
+
+    def setDescription(self, new_description: str):
+        self.description = new_description
 
     def getFilename(self) -> str:
         url = self.getUrl()

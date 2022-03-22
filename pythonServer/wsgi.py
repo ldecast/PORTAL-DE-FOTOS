@@ -22,7 +22,7 @@ cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 CORS(app)
 s3 = None
 dynamo = None
-#TODO tengo que quitar el app.debug para produccion
+# TODO tengo que quitar el app.debug para produccion
 
 def token_required(f):
 
@@ -49,16 +49,22 @@ def login():
         data = rawdata['data']
         uname = data['user']
         password = data['password']
+        photo = data['photo']
         #consulta
         finalpass = hashlib.md5(password.encode())
-        if login_user(uname, finalpass.hexdigest()):
-            token = jwt.encode(
-                {
-                    'user':
-                    str(uname),
-                    'exp':
-                    datetime.datetime.utcnow() + datetime.timedelta(minutes=40)
-                }, app.config['SECRET_KEY'])
+        token = jwt.encode(
+            {
+                'user':
+                str(uname),
+                'exp':
+                datetime.datetime.utcnow() + datetime.timedelta(minutes=40)
+            }, app.config['SECRET_KEY'])
+        if password != "" :
+            print("login por pass")
+            if login_user(uname, finalpass.hexdigest()):
+                return jsonify({'data': {"token":token.decode('utf-8')}, 'status': 200})
+        elif Compare(uname,photo):
+            print("login por foto")
             return jsonify({'data': {"token":token.decode('utf-8')}, 'status': 200})
     return jsonify({'data': 'Credenciales invalidas', 'status': 401})
 
@@ -89,7 +95,7 @@ def selfuser():
                           algorithms=['HS256'])
         usuario = get_user(data["user"])
         retornoAux = []
-        for element in usuario.photos:
+        for element in usuario.getPhotos():
             cadenaComparacion = str(element.url).split(sep='/')
             if len(cadenaComparacion)==3:
                 element.album = 'Fotos_Perfil'
@@ -246,11 +252,21 @@ def albumId(name):
 
     return jsonify({'data':'erro at DELETE or GET', 'status':403})
 
+@app.route("/translate",methods=['POST'])
+# @token_required
+def translate():
+    rawdata = request.get_json()
+    data = rawdata['data']
+    text = data['text']
+    destination = data["destination"]
+
+    res = translateT(text,destination)
+    if res is None:
+        return jsonify({'data': 'Ocurrio un error al traducir', 'status': 401})
+    return jsonify({'data': {"text":res}, 'status': 200})
 
 if __name__=='__main__':
     from waitress import serve
-    s3 = connectBucketS3()
-    dynamo = connectDynamoDB()
-    print(s3)
-    print(dynamo)
+    conection = connect_AWS_Services()
+    print(conection)
     serve(app,port=5000)

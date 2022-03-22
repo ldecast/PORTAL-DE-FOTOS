@@ -9,15 +9,12 @@ class UserDB:
         self.photos = []
 
     def __str__(self) -> str:
-        # albums = ""
-        urls = ""
+        data = ""
         for photo in self.getPhotos():
-            # albums += (photo.getAlbumName()+", ")
-            urls += (photo.getUrl()+"\n")
+            data += (photo.getUrl()+" ---> "+photo.getDescription()+"\n")
         return (f"[\nUsuario: {self.getUserName()}\n"
                 f"Nombre: {self.getFullName()}\n"
-                # f"Albums:\n{albums[:-2]}\n"
-                f"Fotos:\n{urls}]")
+                f"Fotos:\n{data}]")
 
     def getUserName(self) -> str:
         return self.username
@@ -40,8 +37,8 @@ class UserDB:
     def getPhotos(self) -> list:
         return self.photos
 
-    def addPhoto(self, url: str, albumName: str):
-        new_photo = Photo(url, albumName, self.getUserName())
+    def addPhoto(self, url: str, tags: list, description: str):
+        new_photo = Photo(url, tags, self.getUserName(), description)
         self.photos.append(new_photo)
 
     def getProfilePhoto(self) -> Photo:
