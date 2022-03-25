@@ -258,7 +258,7 @@ def translate():
     rawdata = request.get_json()
     data = rawdata['data']
     text = data['text']
-    destination = data["destination"]
+    destination = data["language"]
 
     res = translateT(text,destination)
     if res is None:

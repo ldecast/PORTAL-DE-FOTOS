@@ -16,10 +16,11 @@ def Compare_faces(comparator:string,rekognitionClient,userData) -> bool:
             return False
 
         imageSource["S3Object"]["Name"] = userData.getProfilePhoto().getUrl()
+        print(imageSource)
 
         resRekognition = rekognitionClient.compare_faces(
                                   SourceImage=imageSource,
-                                  TargetImage={'Bytes': base64.b64decode(comparator)})
+                                  TargetImage={'Bytes': base64.decodebytes(comparator)})
         for face in resRekognition["FaceMatches"]:
             similarity = face["Similarity"]
             if similarity > 30:
@@ -75,15 +76,8 @@ def bubbleSort(arr):
 
 def translateText(text,destination,client_translate):
     try:
-        trCode = ""
-        if destination=="English":
-            trCode="en"
-        elif destination=="French":
-            trCode="fr"
-        else:
-            trCode="es"
 
-        result = client_translate.translate_text(Text=text,Settings={'Formality': 'INFORMAL'},SourceLanguageCode="auto",TargetLanguageCode= trCode)
+        result = client_translate.translate_text(Text=text,Settings={'Formality': 'INFORMAL'},SourceLanguageCode="auto",TargetLanguageCode= destination)
         if result["TranslatedText"] is not None:
             return result["TranslatedText"]
         return None
