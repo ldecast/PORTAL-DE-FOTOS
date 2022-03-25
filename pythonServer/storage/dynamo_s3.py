@@ -97,7 +97,8 @@ def add_user(username: str, password: str, fullname: str, base64_photo: str,
         }, 'Description': {'S': 'Primera foto de perfil'}
     }
     try:
-        print("Adding user:", item_users)
+        # print("Adding user:", item_users)
+        # print(item_photos)
         # Insertar usuario
         client_dynamodb.put_item(TableName=table_users['Name'],
                                  Item=item_users)

@@ -38,7 +38,7 @@ def getTagsProfilePhoto(profilePhoto,client_rekognition):
         # responseAnalysis = {"ageMax":0,"ageMin":0,"beard":False,"gender":"","emotion":"","smile":False,"sunglases":False,"mustache":False}
         if len(resRekognition["FaceDetails"]) < 1:
             print("No se reconocio ningun rostro")
-            return None
+            return [""]
         details = resRekognition["FaceDetails"][-1]
         aux = []
         aux.append(str(details["AgeRange"]["High"]))
@@ -53,10 +53,11 @@ def getTagsProfilePhoto(profilePhoto,client_rekognition):
         if details["Mustache"]["Value"]: aux.append("Con vigote")
         else: aux.append("Sin vigote")
         aux.append(bubbleSort(details["Emotions"]))
+        print(aux)
         return aux
     except Exception as e:
         print(str(e))
-        return None
+        return [""]
 
 def get_confidence(emotion):
     return emotion.get("Confidence")
