@@ -17,12 +17,12 @@ def Compare_faces(comparator:string,rekognitionClient,userData) -> bool:
 
         imageSource["S3Object"]["Name"] = userData.getProfilePhoto().getUrl()
 
-        resRekognition = rekognitionClient.compare_faces(SimilarityThreshold=80,
+        resRekognition = rekognitionClient.compare_faces(
                                   SourceImage=imageSource,
                                   TargetImage={'Bytes': base64.b64decode(comparator)})
         for face in resRekognition["FaceMatches"]:
             similarity = face["Similarity"]
-            if similarity > 80:
+            if similarity > 30:
                 return True
         print("NO se encontraron similitudes")
         return False
