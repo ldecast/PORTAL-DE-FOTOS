@@ -10,10 +10,10 @@
   height: 100%;
   width: 100%;
   object-fit: cover;
-}	
+}
 
 .preview {
-  background-color: #5555;
+  background-color: #2225;
   backdrop-filter: blur(10px);
 
   position: fixed;

@@ -14,10 +14,6 @@ const links = [
     to: '/upload'
   },
   {
-    name: 'Álbumes',
-    to: '/albums'
-  },
-  {
     name: 'Fotos',
     to: '/photos'
   }

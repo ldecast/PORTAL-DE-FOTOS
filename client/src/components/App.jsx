@@ -6,7 +6,6 @@ import { Slide, toast, ToastContainer } from 'react-toastify'
 import { Redirect, Route, Switch } from 'wouter'
 
 import Navbar from '@/components/Navbar'
-import AlbumsPage from '@/pages/AlbumsPage'
 import HomePage from '@/pages/HomePage'
 import LoginPage from '@/pages/LoginPage'
 import PhotosPage from '@/pages/PhotosPage'
@@ -16,6 +15,7 @@ import UploadPhotoPage from '@/pages/UploadPhotoPage'
 import { getUser } from '@/services/userServices'
 import { albumsAtom, emptyUser, userAtom } from '@/state'
 import css from '@/styles/App.module.css'
+import PhotoPage from '@/pages/PhotoPage'
 
 function App() {
   const [user, setUser] = useAtom(userAtom)
@@ -40,7 +40,7 @@ function App() {
         const albums = []
 
         user.photos
-          .filter((photo) => photo.url !== user.photo.url)
+          // .filter((photo) => photo.url !== user.photo.url)
           .forEach((photo) => {
             photo.tags.forEach((tag) => {
               const album = albums.find((album) => album.name === tag)
@@ -56,13 +56,14 @@ function App() {
 
         setAlbums(albums)
       })
-      .catch((err) => {
-        console.log(err)
+      .catch(() => {
         const newUser = {
           isLoggedIn: false,
           ...emptyUser
         }
         setUser(newUser)
+
+        toast.error('Se ha cerrado tu sesión')
       })
   }, [isLoggedIn])
 
@@ -93,13 +94,13 @@ function App() {
       condition: isLoggedIn
     },
     {
-      path: '/albums',
-      component: <AlbumsPage />,
+      path: '/photos',
+      component: <PhotosPage />,
       condition: isLoggedIn
     },
     {
-      path: '/photos',
-      component: <PhotosPage />,
+      path: '/photos/:url',
+      component: (params) => <PhotoPage url={params.url} />,
       condition: isLoggedIn
     },
     {
@@ -115,7 +116,7 @@ function App() {
   return (
     <main className={css.base} style={{ backgroundImage: `url(${background})` }}>
       <ToastContainer
-        autoClose={3000}
+        autoClose={2500}
         limit={2}
         toastClassName={css.toast}
         theme='dark'

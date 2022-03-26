@@ -13,11 +13,6 @@ export default async (method, url, data = null) => {
         })
       : null
 
-    console.info(
-      `fetching ${method} ${API_URL}${url}
-      headers ${JSON.stringify(headers)}
-      body ${body}`
-    )
     const response = await fetch(`${API_URL}${url}`, {
       method,
       headers,
@@ -27,10 +22,8 @@ export default async (method, url, data = null) => {
     const jsonResponse = await response.json()
     if (jsonResponse.status !== 200) throw new Error(jsonResponse.data)
 
-    console.info('fetched:', jsonResponse.data)
     return jsonResponse.data
   } catch (error) {
-    console.error('error:', error)
     throw error
   }
 }
