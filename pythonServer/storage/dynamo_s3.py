@@ -11,6 +11,12 @@ load_dotenv()
 ACCESS_KEY_ID = os.getenv('ACCESS_KEY_ID')
 SECRET_ACCESS_KEY = os.getenv('SECRET_ACCESS_KEY')
 REGION_NAME = os.getenv('REGION_NAME')
+TABLE_PHOTOS = {
+    'Name': 'Photos',
+    'Attributes': ['PhotoURL', 'Tags', 'Username', 'Description']
+}
+
+BUCKET_NAME = "imagenes.semi1"
 
 client_dynamodb = None
 client_s3 = None
@@ -161,27 +167,20 @@ def get_user(__username: str) -> UserDB:
 
 
 # SUBIR FOTO A ALBUM DE USUARIO (PARA CREAR UN ALBUM ES NECESARIO SUBIR UNA FOTO)
-def uploadPhoto(username: str, albumName: str, base64_photo: str,
-                filename_photo: str):
-    url = "Fotos_Publicadas/" + username + "/" + albumName + "/" + filename_photo
-    item_photos = {
-        'PhotoURL': {
-            'S': url
-        },
-        'AlbumName': {
-            'S': albumName
-        },
-        'Username': {
-            'S': username
-        }
-    }
+def uploadPhoto(username: str, base64_photo: str, filename_photo: str, description: str):
+    url = "Fotos_Publicadas/"+username+"/"+filename_photo
     b64_decode = base64.b64decode(base64_photo)
+    item_photos = {
+        'PhotoURL': {'S': url},
+        'Tags': {'SS': getPhotoLabels(b64_decode)},
+        'Username': {'S': username},
+        'Description': {'S': description}
+    }
     # Insertar ruta en Dynamo
-    client_dynamodb.put_item(TableName=table_photos['Name'], Item=item_photos)
+    client_dynamodb.put_item(
+        TableName=TABLE_PHOTOS['Name'], Item=item_photos)
     # Guardar la foto en bucket
-    client_s3.upload_fileobj(io.BytesIO(b64_decode),
-                             bucket_name,
-                             url,
+    client_s3.upload_fileobj(io.BytesIO(b64_decode), BUCKET_NAME, url,
                              ExtraArgs={'ContentType': "image"})
     print("Upload Successful")
     return True
@@ -220,61 +219,53 @@ def updatePhoto(url:str,album:str,photo:str,username:str):
 
 
 # ACTUALIZAR LA FOTO DE PERFIL
-def updateProfilePhoto(__username: str, new_b64_profile_photo: str,
-                       new_filename_photo: str) -> bool:
+def updateProfilePhoto(__username: str, new_b64_profile_photo: str, new_filename_photo: str) -> bool:
     # Obtener el usuario
     user = get_user(__username)
     old_photo = user.getProfilePhoto()
-    if old_photo:
-        new_url_old_photo = "Fotos_Perfil/" + __username + "/" + old_photo.getFilename()
-    else:
-        new_url_old_photo = "Fotos_Perfil/" + __username + "/user"
-
-    if old_photo:
-        copy_source = {'Bucket': bucket_name, 'Key': old_photo.getUrl()}
-    # Copiar a la carpeta común
-
-        print(copy_source, bucket_name,new_url_old_photo,'datos')
-        client_s3.copy(copy_source, bucket_name, new_url_old_photo)
-        # Eliminar la que estaba en /actual
-        client_s3.delete_object(Bucket=bucket_name, Key=old_photo.getUrl())
-    # Cargar la nueva en /actual
-    new_url = "Fotos_Perfil/" + __username + "/actual/" + new_filename_photo
-    item_photos = {
-        'PhotoURL': {
-            'S': new_url
-        },
-        'AlbumName': {
-            'S': "Fotos de Perfil"
-        },
-        'Username': {
-            'S': __username
-        }
+    new_url_old_photo = "Fotos_Perfil/"+__username+"/"+old_photo.getFilename()
+    copy_source = {
+        'Bucket': BUCKET_NAME,
+        'Key': old_photo.getUrl()
     }
+    # Copiar a la carpeta común
+    client_s3.copy(
+        copy_source,
+        BUCKET_NAME,
+        new_url_old_photo
+    )
+    # Eliminar la que estaba en /actual
+    client_s3.delete_object(
+        Bucket=BUCKET_NAME,
+        Key=old_photo.getUrl()
+    )
+    # Cargar la nueva en /actual
+    new_url = "Fotos_Perfil/"+__username+"/actual/"+new_filename_photo
     b64_decode = base64.b64decode(new_b64_profile_photo)
+    item_photos = {
+        'PhotoURL': {'S': new_url},
+        'Tags': {'SS': getPhotoLabels(b64_decode)},
+        'Username': {'S': __username},
+        'Description': {'S': 'Nueva foto de perfil'}
+    }
     # Guardar la foto en bucket
-    client_s3.upload_fileobj(io.BytesIO(b64_decode),
-                             bucket_name,
-                             new_url,
+    client_s3.upload_fileobj(io.BytesIO(b64_decode), BUCKET_NAME, new_url,
                              ExtraArgs={'ContentType': "image"})
     # Insertar ruta en Dynamo
-    client_dynamodb.put_item(TableName=table_photos['Name'], Item=item_photos)
+    client_dynamodb.put_item(
+        TableName=TABLE_PHOTOS['Name'], Item=item_photos)
     # Actualizar item antiguo en Dynamo
-    if old_photo:
-        key = {
-            'PhotoURL': {
-                'S': old_photo.getUrl()
-            },
-            'Username': {
-                'S': __username
-            }
-        }
-        client_dynamodb.delete_item(TableName=table_photos['Name'], Key=key)
+    key = {
+        'PhotoURL': {'S': old_photo.getUrl()},
+        'Username': {'S': __username}
+    }
+    client_dynamodb.delete_item(
+        TableName=TABLE_PHOTOS['Name'], Key=key)
     # Reutilizar el item cambiando la url
     item_photos['PhotoURL']['S'] = new_url_old_photo
-    client_dynamodb.put_item(TableName=table_photos['Name'], Item=item_photos)
+    client_dynamodb.put_item(
+        TableName=TABLE_PHOTOS['Name'], Item=item_photos)
     return True
-
 
 # EDITAR UN USUARIO (FULLNAME O USERNAME)
 def updateUser(__username: str, __password: str, new_username: str,
@@ -361,15 +352,20 @@ def deleteAlbum(username: str, albumName: str) -> bool:
 
 # ELIMINAR UNA FOTO DEL ALBUM
 def deletePhoto(username: str, URL_photo: str) -> bool:
-    # Eliminar en bucket S3
+     # Eliminar en bucket S3
     client_s3.delete_object(
-        Bucket=bucket_name,
-        Key=
-        URL_photo  # Sin la dirección 's3.amazonaws.com/practica1-G10-imagenes/'
+        Bucket=BUCKET_NAME,
+        Key=URL_photo  # Sin la dirección 's3.amazonaws.com/practica1-G10-imagenes/'
     )
     # Eliminar en DynamoDB
-    key = {'PhotoURL': {'S': URL_photo}, 'Username': {'S': username}}
-    client_dynamodb.delete_item(TableName=table_photos['Name'], Key=key)
+    key = {
+        'PhotoURL': {'S': URL_photo},
+        'Username': {'S': username}
+    }
+    client_dynamodb.delete_item(
+        TableName=TABLE_PHOTOS['Name'],
+        Key=key
+    )
     return True
 
 def translateT(text,destination):
@@ -378,6 +374,18 @@ def translateT(text,destination):
 def Compare(profileUser,comparator):
     return Compare_faces(comparator,client_rekognition,get_user(profileUser))
 
+
+def getPhotoLabels(b64_decode: bytes):
+    image = {'Bytes': b64_decode}
+    maxLabels = 5
+    response = client_rekognition.detect_labels(
+        Image=image, MaxLabels=maxLabels
+    )
+    labels = []
+    for label in response['Labels']:
+        labels.append(label['Name'])
+    print(labels)
+    return labels
 # def tags(photo):
 #     return getTagsProfilePhoto(photo,client_rekognition)
 

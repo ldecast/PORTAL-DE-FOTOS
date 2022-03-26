@@ -160,8 +160,7 @@ def photo():
                                  app.config['SECRET_KEY'],
                                  algorithms=['HS256'])
         photo = data['photo']
-        confirmation = uploadPhoto(tokendecode['user'], photo['album'],
-                                   photo['photo'], photo['name'])
+        confirmation = uploadPhoto(tokendecode['user'],photo['photo'],photo['name'],photo['description'])
         if confirmation:
             return jsonify({
                 'data': 'photo uploaded successfully',

@@ -60,6 +60,19 @@ def getTagsProfilePhoto(profilePhoto,client_rekognition):
         print(str(e))
         return [""]
 
+def getTagsPhoto(Photo, client_rekognition):
+    if Photo is None or Photo == '':
+        return ['']
+    try:
+        resRekognition = client_rekognition.detect_labels(Image={'Bytes':base64.b64decode(Photo)},MaxLabels=100)
+        aux=[]
+        for element in resRekognition['Labels']:
+            aux.append(element['Name'])
+        return aux
+    except Exception as e:
+        print('Exception',str(e))
+        return ['']
+
 def get_confidence(emotion):
     return emotion.get("Confidence")
 
