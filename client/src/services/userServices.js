@@ -1,6 +1,7 @@
 import request from '@/helpers/request'
 
 export const loginUser = (user) => {
+  console.log(user)
   return request('POST', '/login', user)
 }
 

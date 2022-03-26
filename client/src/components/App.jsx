@@ -13,7 +13,6 @@ import PhotosPage from '@/pages/PhotosPage'
 import SignupPage from '@/pages/SignupPage'
 import UpdateUserPage from '@/pages/UpdateUserPage'
 import UploadPhotoPage from '@/pages/UploadPhotoPage'
-import { getAlbums } from '@/services/albumServices'
 import { getUser } from '@/services/userServices'
 import { albumsAtom, emptyUser, userAtom } from '@/state'
 import css from '@/styles/App.module.css'
@@ -28,6 +27,7 @@ function App() {
     const token = localStorage.getItem('faunaToken')
 
     if (!token) return
+    if (!isLoggedIn) return
 
     getUser()
       .then((user) => {
@@ -37,17 +37,27 @@ function App() {
         }
         setUser(newUser)
 
-        getAlbums()
-          .then(setAlbums)
-          .catch((err) => {
-            console.log(err)
-            toast.error('Error al obtener los álbumes. Por favor recarga la página.')
+        const albums = []
+
+        user.photos
+          .filter((photo) => photo.url !== user.photo.url)
+          .forEach((photo) => {
+            photo.tags.forEach((tag) => {
+              const album = albums.find((album) => album.name === tag)
+              if (!album)
+                albums.push({
+                  name: tag,
+                  photos: []
+                })
+
+              albums.find((album) => album.name === tag).photos.push(photo)
+            })
           })
+
+        setAlbums(albums)
       })
       .catch((err) => {
         console.log(err)
-        toast.error('Se ha cerrado tu sesión')
-
         const newUser = {
           isLoggedIn: false,
           ...emptyUser
@@ -105,8 +115,8 @@ function App() {
   return (
     <main className={css.base} style={{ backgroundImage: `url(${background})` }}>
       <ToastContainer
-        autoClose={4000}
-        limit={1}
+        autoClose={3000}
+        limit={2}
         toastClassName={css.toast}
         theme='dark'
         transition={Slide}

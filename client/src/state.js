@@ -7,9 +7,11 @@ export const emptyUser = {
   photos: []
 }
 
+const token = localStorage.getItem('faunaToken')
+
 export const userAtom = atom({
   ...emptyUser,
-  isLoggedIn: !!localStorage.getItem('faunaToken')
+  isLoggedIn: !!token && token !== 'null' && token !== 'undefined'
 })
 
 export const albumsAtom = atom([])

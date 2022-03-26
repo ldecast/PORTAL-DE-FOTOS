@@ -25,6 +25,7 @@ export default async (method, url, data = null) => {
     })
 
     const jsonResponse = await response.json()
+    if (jsonResponse.status !== 200) throw new Error(jsonResponse.data)
 
     console.info('fetched:', jsonResponse.data)
     return jsonResponse.data

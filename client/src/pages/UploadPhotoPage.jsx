@@ -1,21 +1,17 @@
 import camera from '@assets/camera.svg'
 import { Button, Container, Grid, Input, Text } from '@nextui-org/react'
 import { useAtom } from 'jotai'
-import { useState } from 'react'
 import { toast } from 'react-toastify'
 import Webcam from 'react-webcam'
 
-import Select from '@/components/Select'
 import { filterBase64 } from '@/helpers/base64'
 import usePhoto from '@/hooks/usePhoto'
 import { uploadPhoto } from '@/services/photoServices'
-import { albumsAtom, userAtom } from '@/state'
+import { userAtom } from '@/state'
 import css from '@/styles/UploadPhotoPage.module.css'
 
 function UploadPhotoPage() {
-  const [creatingAlbum, setCreatingAlbum] = useState(false)
   const [user, setUser] = useAtom(userAtom)
-  const [albums, setAlbums] = useAtom(albumsAtom)
 
   const {
     selectedPhoto,
@@ -25,30 +21,19 @@ function UploadPhotoPage() {
     webcamRef
   } = usePhoto()
 
-  const handleSelectAlbum = (e) => {
-    const album = e.target.value
-    setCreatingAlbum(album === 'Nuevo álbum')
-  }
-
   const handleSubmit = (e) => {
     e.preventDefault()
     const data = new FormData(e.target)
     const name = data.get('name')
-    const album = data.get('album')
-    const newAlbum = data.get('newAlbum')
 
     if (!name) return toast.error('Por favor ingresa un nombre para la foto')
 
     if (!selectedPhoto || selectedPhoto === 'pending')
       return toast.error('Por favor toma o selecciona una foto')
 
-    if (creatingAlbum && !newAlbum)
-      return toast.error('Por favor ingresa un nombre para el album')
-
     const photo = {
       photo: {
         name,
-        album: (creatingAlbum && newAlbum) || album,
         photo: filterBase64(selectedPhoto)
       }
     }
@@ -61,8 +46,6 @@ function UploadPhotoPage() {
           ...user,
           photos: [...user.photos, newPhoto]
         })
-
-        if (creatingAlbum) setAlbums([...albums, photo.photo.album])
 
         toast.success('Foto subida correctamente')
       })
@@ -85,7 +68,11 @@ function UploadPhotoPage() {
             {selectedPhoto === 'pending' ? (
               <Grid.Container gap={2}>
                 <Grid xs={12} sm={12}>
-                  <Webcam className={css.camera} ref={webcamRef} />
+                  <Webcam
+                    className={css.camera}
+                    ref={webcamRef}
+                    screenshotFormat='image/png'
+                  />
                 </Grid>
                 <Grid xs={12} justify='center'>
                   <Button
@@ -114,28 +101,6 @@ function UploadPhotoPage() {
                   placeholder='Ingresa un nombre para la foto'
                 />
               </Grid>
-              <Grid xs={12}>
-                <Text small>Álbum</Text>
-              </Grid>
-              <Grid xs={12}>
-                <Select
-                  name='album'
-                  options={[...albums, 'Nuevo álbum']}
-                  onChange={handleSelectAlbum}
-                />
-              </Grid>
-              {creatingAlbum && (
-                <Grid xs={12}>
-                  <Input
-                    fullWidth
-                    required
-                    id='newAlbum'
-                    name='newAlbum'
-                    label='Nombre del nuevo álbum'
-                    placeholder='Ingresa un nuevo nombre para el álbum'
-                  />
-                </Grid>
-              )}
               <Grid xs={12}>
                 <Text small>Foto</Text>
               </Grid>

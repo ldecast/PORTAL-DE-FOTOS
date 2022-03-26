@@ -11,7 +11,7 @@ import { createUser } from '@/services/userServices'
 import css from '@/styles/SignupPage.module.css'
 
 function SignupPage() {
-  const [location, setLocation] = useLocation()
+  const [, setLocation] = useLocation()
 
   const {
     selectedPhoto,
@@ -56,11 +56,11 @@ function SignupPage() {
 
     createUser(User)
       .then(({ data }) => {
-        setLocation('/login')
+        // setLocation('/login')
         toast.success('Registro correcto')
       })
       .catch((err) => {
-        toast.error('Usuario o contraseña incorrectos')
+        toast.error('Error inesperado')
         console.log(err)
       })
   }
@@ -76,7 +76,11 @@ function SignupPage() {
             {selectedPhoto === 'pending' ? (
               <Grid.Container gap={2}>
                 <Grid xs={12} sm={12}>
-                  <Webcam className={css.camera} ref={webcamRef} />
+                  <Webcam
+                    className={css.camera}
+                    ref={webcamRef}
+                    screenshotFormat='image/png'
+                  />
                 </Grid>
                 <Grid xs={12} justify='center'>
                   <Button

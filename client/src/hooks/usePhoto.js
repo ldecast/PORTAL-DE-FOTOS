@@ -4,22 +4,29 @@ import { toBase64 } from '@/helpers/base64'
 
 function usePhoto(initialPhoto) {
   const [selectedPhoto, setSelectedPhoto] = useState(initialPhoto || '')
+  const [takingPhoto, setTakingPhoto] = useState(false)
+
   const webcamRef = useRef(null)
 
   const handleStartTakingPhoto = (e) => {
-    e.preventDefault()
+    e && e.preventDefault()
     setSelectedPhoto('pending')
+    setTakingPhoto(true)
   }
 
-  const handleTakePhoto = (e) => {
-    e.preventDefault()
+  const handleTakePhoto = async (e) =>
+    new Promise((resolve) => {
+      e && e.preventDefault()
 
-    const imageSrc = webcamRef.current.getScreenshot()
-    setSelectedPhoto(imageSrc)
-  }
+      const imageSrc = webcamRef.current.getScreenshot()
+      setSelectedPhoto(imageSrc)
+      setTakingPhoto(false)
+      resolve(imageSrc)
+    })
 
   const handleSelectPhoto = (e) => {
-    e.preventDefault()
+    e && e.preventDefault()
+    setTakingPhoto(false)
 
     const photoInput = document.createElement('input')
     photoInput.type = 'file'
@@ -35,6 +42,7 @@ function usePhoto(initialPhoto) {
 
   return {
     selectedPhoto,
+    takingPhoto,
     handleStartTakingPhoto,
     handleTakePhoto,
     handleSelectPhoto,

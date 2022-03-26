@@ -15,13 +15,11 @@ module.exports = {
     ecmaVersion: 12,
     sourceType: 'module'
   },
-  plugins: ['react', 'simple-import-sort', 'prettier'],
+  plugins: ['react', 'prettier'],
   rules: {
     'prettier/prettier': ['error', {}, { usePrettierrc: true }],
     'react/react-in-jsx-scope': 'off',
     'react/prop-types': 'off',
-    'simple-import-sort/imports': 'error',
-    'simple-import-sort/exports': 'error',
     'jsx-a11y/anchor-is-valid': 'off',
     'jsx-a11y/no-static-element-interactions': 'off',
     'react/display-name': 'off',

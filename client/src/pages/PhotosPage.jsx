@@ -2,24 +2,13 @@ import { Grid } from '@nextui-org/react'
 import { useAtom } from 'jotai'
 
 import Photo from '@/components/Photo'
-import { userAtom } from '@/state'
+import { albumsAtom, userAtom } from '@/state'
 import css from '@/styles/PhotosPage.module.css'
 
 function PhotosPage() {
   const [User] = useAtom(userAtom)
+  const [albums] = useAtom(albumsAtom)
   const { user, photos } = User
-
-  const albums = []
-
-  for (let photo of photos) {
-    if (!albums.find((album) => album.name === photo.album))
-      albums.push({
-        name: photo.album,
-        photos: []
-      })
-
-    albums.find((album) => album.name === photo.album).photos.push(photo)
-  }
 
   return (
     <Grid.Container gap={2} className={css.base}>

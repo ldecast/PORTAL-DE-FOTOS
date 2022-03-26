@@ -55,7 +55,7 @@ function UpdateUserPage() {
         }
 
         setUser(newUser)
-        setLocation('/')
+        // setLocation('/')
       })
       .catch((err) => {
         toast.error('Error al actualizar usuario')
@@ -77,7 +77,11 @@ function UpdateUserPage() {
               {selectedPhoto === 'pending' ? (
                 <Grid.Container gap={2}>
                   <Grid xs={12} sm={12}>
-                    <Webcam className={css.camera} ref={webcamRef} />
+                    <Webcam
+                      className={css.camera}
+                      ref={webcamRef}
+                      screenshotFormat='image/png'
+                    />
                   </Grid>
                   <Grid xs={12} justify='center'>
                     <Button
