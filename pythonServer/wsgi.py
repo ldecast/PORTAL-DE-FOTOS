@@ -273,6 +273,12 @@ def text():
         return jsonify({'data': 'Ocurrio un error al traducir','status':401})
     return jsonify({'data': res, 'status':200})
 
+@app.route('/chat',methods=['POST'])
+def chat():
+    rawdata = request.get_json()
+    data = rawdata['data']
+    return jsonify({'data':data,'status':200})
+
 if __name__=='__main__':
     from waitress import serve
     conection = connect_AWS_Services()
