@@ -91,3 +91,12 @@ X-Access-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicm9qYXNjanAiLCJ
         }
     }
 }
+
+###
+
+POST http://localhost:5000/chat
+Content-Type: application/json
+
+{
+    "data":"si"
+}

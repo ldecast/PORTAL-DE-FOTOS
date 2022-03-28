@@ -54,17 +54,16 @@ if __name__ == '__main__':
     if connect_AWS_Services():
         # dynamo_s3.add_user("luisd", "0000", "Luis Danniel Castellanos",
         #                    getBase64('../testing/perfil1.txt'), "img1.jpg")
-        # updateUser("luisd", "0000", "ldecast", "Luis Danniel Ernesto Castellanos Galindo")
-        # uploadPhoto('luisd', getBase64(
-        #     '../testing/sistemas.txt'), 'Sistemas.jpg')
-        # updateProfilePhoto("ldecast", getBase64('../testing/perfil2.txt'), 'img2.jpg')
-        # add_user("luisd", "1234", "LuisDa", getBase64('../testing/perfil1.txt'), "hola.jpg")
-        # deleteAlbum('ldecast','Pensums')
-        # deletePhoto('ldecast','Fotos_Perfil/ldecast/img1.jpg')
-        # dynamo_s3.get_user('luisd')
+        # dynamo_s3.updateUser("luisd", "0000", "ldecast", "Luis Danniel Ernesto Castellanos Galindo")
+        # dynamo_s3.uploadPhoto('luisd', getBase64(
+        #     '../testing/sistemas.txt'), 'Sistemas.jpg', 'Pensum de sistemas')
+        # dynamo_s3.updateProfilePhoto("luisd", getBase64('../testing/perfil2.txt'), 'img2.jpg')
+        # dynamo_s3.add_user("luisd", "1234", "LuisDa", getBase64('../testing/perfil1.txt'), "hola.jpg")
+        dynamo_s3.deletePhoto('ldecast','Fotos_Perfil/ldecast/img1.jpg')
+        # dynamo_s3.get_user('ldecast')
 
         # b64_decode = base64.b64decode(getBase64('../testing/texto3.txt'))
         # ia.getPhotoLabels(b64_decode)
         # ia.extractText(b64_decode)
-        ia.translateText('Hola mundo', 'fr')
+        # ia.translateText('Hola mundo', 'fr')
         pass
