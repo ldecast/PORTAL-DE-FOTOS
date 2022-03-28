@@ -268,7 +268,7 @@ def translate():
 def text():
     rawdata = request.get_json()
     data = rawdata['data']
-    res = extractText(bytes(data))
+    res = extractText(data)
     if res is None:
         return jsonify({'data': 'Ocurrio un error al traducir','status':401})
     return jsonify({'data': res, 'status':200})

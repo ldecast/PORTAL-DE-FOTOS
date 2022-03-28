@@ -33,6 +33,7 @@ table_photos = {
     'Attributes': ['PhotoURL', 'Tags', 'Username', 'Description']
 }
 
+
 def connect_AWS_Services() -> bool:
     try:
         global client_dynamodb
@@ -41,25 +42,25 @@ def connect_AWS_Services() -> bool:
         global client_translate
         # CONECTAR A LA BASE DE DATOS
         client_dynamodb = boto3.client('dynamodb',
-                                                 aws_access_key_id=ACCESS_KEY_ID,
-                                                 aws_secret_access_key=SECRET_ACCESS_KEY,
-                                                 region_name=REGION_NAME)
+                                       aws_access_key_id=ACCESS_KEY_ID,
+                                       aws_secret_access_key=SECRET_ACCESS_KEY,
+                                       region_name=REGION_NAME)
         # CONECTAR A BUCKET S3 DE IMAGENES
         client_s3 = boto3.client('s3',
-                                           aws_access_key_id=ACCESS_KEY_ID,
-                                           aws_secret_access_key=SECRET_ACCESS_KEY,
-                                           region_name=REGION_NAME)
+                                 aws_access_key_id=ACCESS_KEY_ID,
+                                 aws_secret_access_key=SECRET_ACCESS_KEY,
+                                 region_name=REGION_NAME)
         # CONECTAR A REKOGNITION
         client_rekognition = boto3.client('rekognition',
-                                             aws_access_key_id=ACCESS_KEY_ID,
-                                             aws_secret_access_key=SECRET_ACCESS_KEY,
-                                             region_name=REGION_NAME)
+                                          aws_access_key_id=ACCESS_KEY_ID,
+                                          aws_secret_access_key=SECRET_ACCESS_KEY,
+                                          region_name=REGION_NAME)
 
         # CONECTAR A TRANSLATE
         client_translate = boto3.client('translate',
-                                           aws_access_key_id=ACCESS_KEY_ID,
-                                           aws_secret_access_key=SECRET_ACCESS_KEY,
-                                           region_name=REGION_NAME)
+                                        aws_access_key_id=ACCESS_KEY_ID,
+                                        aws_secret_access_key=SECRET_ACCESS_KEY,
+                                        region_name=REGION_NAME)
     except:
         print("Something went wrong connecting with AWS Services")
         return False
@@ -95,7 +96,7 @@ def add_user(username: str, password: str, fullname: str, base64_photo: str,
         'PhotoURL': {
             'S': url
         },
-        'Tags': {'SS': getTagsProfilePhoto(base64_photo,client_rekognition)},
+        'Tags': {'SS': getTagsProfilePhoto(base64_photo, client_rekognition)},
         'Username': {
             'S': username
         }, 'Description': {'S': 'Primera foto de perfil'}
@@ -184,10 +185,10 @@ def uploadPhoto(username: str, base64_photo: str, filename_photo: str, descripti
     return True
 
 
-# ACTUALIZAR FOTO 
-def updatePhoto(url:str,album:str,photo:str,username:str):
+# ACTUALIZAR FOTO
+def updatePhoto(url: str, album: str, photo: str, username: str):
     user = get_user(username)
-    oldPhoto = Photo('','','')
+    oldPhoto = Photo('', '', '')
     for element in user.photos:
         if element.url == url:
             oldPhoto = element
@@ -198,8 +199,8 @@ def updatePhoto(url:str,album:str,photo:str,username:str):
     if album == '':
         album = oldPhoto.getAlbumName()
     new_url_old_photo = "Fotos_Publicadas/" + username + "/" + album+"/"+photo
-    client_s3.copy(copy_source,BUCKET_NAME,new_url_old_photo)
-    deletePhoto(username,url)
+    client_s3.copy(copy_source, BUCKET_NAME, new_url_old_photo)
+    deletePhoto(username, url)
     item_photos = {
         'PhotoURL': {
             'S': new_url_old_photo
@@ -213,7 +214,6 @@ def updatePhoto(url:str,album:str,photo:str,username:str):
     }
     client_dynamodb.put_item(TableName=table_photos['Name'], Item=item_photos)
     return True
-
 
 
 # ACTUALIZAR LA FOTO DE PERFIL
@@ -266,6 +266,8 @@ def updateProfilePhoto(__username: str, new_b64_profile_photo: str, new_filename
     return True
 
 # EDITAR UN USUARIO (FULLNAME O USERNAME)
+
+
 def updateUser(__username: str, __password: str, new_username: str,
                new_fullname: str) -> bool:
     key = {'Username': {'S': __username}}
@@ -339,7 +341,7 @@ def updateUsername_URLS(old_user: UserDB, new_username: str):
 
 # ELIMINAR UNA FOTO
 def deletePhoto(username: str, URL_photo: str) -> bool:
-     # Eliminar en bucket S3
+    # Eliminar en bucket S3
     client_s3.delete_object(
         Bucket=BUCKET_NAME,
         Key=URL_photo  # Sin la dirección 's3.amazonaws.com/practica1-G10-imagenes/'
@@ -355,11 +357,13 @@ def deletePhoto(username: str, URL_photo: str) -> bool:
     )
     return True
 
-def translateT(text,destination):
-    return translateText(text,destination,client_translate)
 
-def Compare(profileUser,comparator):
-    return Compare_faces(comparator,client_rekognition,get_user(profileUser))
+def translateT(text, destination):
+    return translateText(text, destination, client_translate)
+
+
+def Compare(profileUser, comparator):
+    return Compare_faces(comparator, client_rekognition, get_user(profileUser))
 
 
 def getPhotoLabels(b64_decode: bytes):
@@ -374,8 +378,10 @@ def getPhotoLabels(b64_decode: bytes):
     print(labels)
     return labels
 
+
 # EXTRAER TEXTO DE UNA FOTO
-def extractText(b64_decode: bytes):
+def extractText(b64_str: str) -> str:
+    b64_decode = base64.b64decode(b64_str)
     image = {'Bytes': b64_decode}
     response = client_rekognition.detect_text(
         Image=image
@@ -395,7 +401,7 @@ def extractText(b64_decode: bytes):
         # print('Type:' + detection['Type'])
         # print()
     print('Detected text:\n' + text)
-    return text    
+    return text
 # def tags(photo):
 #     return getTagsProfilePhoto(photo,client_rekognition)
 
