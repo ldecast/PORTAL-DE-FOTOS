@@ -16,7 +16,7 @@ TABLE_PHOTOS = {
     'Attributes': ['PhotoURL', 'Tags', 'Username', 'Description']
 }
 
-BUCKET_NAME = "imagenes.semi1"
+BUCKET_NAME = "practica1.g10.imagenes"
 
 client_dynamodb = None
 client_s3 = None
