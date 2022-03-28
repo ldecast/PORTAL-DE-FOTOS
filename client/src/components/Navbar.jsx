@@ -16,6 +16,14 @@ const links = [
   {
     name: 'Fotos',
     to: '/photos'
+  },
+  {
+    name: 'Extraer texto',
+    to: '/extract'
+  },
+  {
+    name: 'Chat',
+    to: '/chat'
   }
 ]
 

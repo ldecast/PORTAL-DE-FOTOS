@@ -16,6 +16,8 @@ import { getUser } from '@/services/userServices'
 import { albumsAtom, emptyUser, userAtom } from '@/state'
 import css from '@/styles/App.module.css'
 import PhotoPage from '@/pages/PhotoPage'
+import ChatPage from '@/pages/ChatPage'
+import ExtractPhotoPage from '@/pages/ExtractPhotoPage'
 
 function App() {
   const [user, setUser] = useAtom(userAtom)
@@ -40,7 +42,7 @@ function App() {
         const albums = []
 
         user.photos
-          // .filter((photo) => photo.url !== user.photo.url)
+          .filter((photo) => photo.url !== user.photo.url)
           .forEach((photo) => {
             photo.tags.forEach((tag) => {
               const album = albums.find((album) => album.name === tag)
@@ -101,6 +103,16 @@ function App() {
     {
       path: '/photos/:url',
       component: (params) => <PhotoPage url={params.url} />,
+      condition: isLoggedIn
+    },
+    {
+      path: '/extract',
+      component: <ExtractPhotoPage />,
+      condition: isLoggedIn
+    },
+    {
+      path: '/chat',
+      component: <ChatPage />,
       condition: isLoggedIn
     },
     {

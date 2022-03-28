@@ -13,3 +13,30 @@ body {
   box-sizing: border-box;
   margin: 0;
 }
+
+.react-chatbot-kit-chat-inner-container {
+  background-color: #223 !important;
+}
+
+.react-chatbot-kit-chat-header {
+  background-color: #223 !important;
+  color: #eee !important;
+}
+
+.react-chatbot-kit-chat-message-container {
+  overflow: hidden !important;
+}
+
+.react-chatbot-kit-chat-input {
+  background-color: #335 !important;
+  color: #eee !important;
+}
+
+
+.react-chatbot-kit-chat-input::placeholder {
+  color: #bbb !important;
+}
+
+.react-chatbot-kit-chat-bot-avatar-container {
+  background-color: rgb(91, 202, 156) !important;
+}

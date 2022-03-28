@@ -1,17 +1,16 @@
 import camera from '@assets/camera.svg'
-import { Button, Container, Grid, Input, Text } from '@nextui-org/react'
-import { useAtom } from 'jotai'
+import { useState } from 'react'
+import { Button, Container, Grid, Text } from '@nextui-org/react'
 import { toast } from 'react-toastify'
 import Webcam from 'react-webcam'
 
 import { filterBase64 } from '@/helpers/base64'
 import usePhoto from '@/hooks/usePhoto'
-import { uploadPhoto } from '@/services/photoServices'
-import { userAtom } from '@/state'
 import css from '@/styles/UploadPhotoPage.module.css'
+import { extractText } from '@/services/variousServices'
 
-function UploadPhotoPage() {
-  const [user, setUser] = useAtom(userAtom)
+function ExtractPhotoPage() {
+  const [extractedText, setExtractedText] = useState('')
 
   const {
     selectedPhoto,
@@ -24,35 +23,12 @@ function UploadPhotoPage() {
   const handleSubmit = (e) => {
     e.preventDefault()
 
-    const formData = new FormData(e.target)
-    const name = formData.get('name')
-    const description = formData.get('description')
-
-    if (!name) return toast.error('Por favor ingrese un nombre para la foto')
-
-    if (!description) return toast.error('Por favor ingrese una descripción para la foto')
-
     if (!selectedPhoto || selectedPhoto === 'pending')
       return toast.error('Por favor toma o selecciona una foto')
 
-    const data = {
-      photo: {
-        name,
-        description,
-        photo: filterBase64(selectedPhoto)
-      }
-    }
-
-    uploadPhoto(data)
-      .then(() => {
-        const newPhoto = data.photo
-
-        setUser({
-          ...user,
-          photos: [...user.photos, newPhoto]
-        })
-
-        toast.success('Foto subida correctamente')
+    extractText(filterBase64(selectedPhoto))
+      .then((text) => {
+        setExtractedText(text)
       })
       .catch((err) => {
         toast.error('Error al subir la foto')
@@ -66,7 +42,7 @@ function UploadPhotoPage() {
         <Grid.Container gap={2}>
           <Grid xs={12}>
             <Container>
-              <Text h1>Sube una foto</Text>
+              <Text h1>Extraer texto de una foto</Text>
             </Container>
           </Grid>
           <Grid xs={12} sm={12} className={css.photo}>
@@ -82,43 +58,17 @@ function UploadPhotoPage() {
                 <Grid xs={12} justify='center'>
                   <Button
                     auto
-                    icon={<img src={camera} alt='foto de perfil' />}
+                    icon={<img src={camera} alt='foto a extraer' />}
                     onClick={handleTakePhoto}
                   />
                 </Grid>
               </Grid.Container>
             ) : (
-              selectedPhoto && <img src={selectedPhoto} alt='foto de perfil' />
+              selectedPhoto && <img src={selectedPhoto} alt='foto a extraer' />
             )}
           </Grid>
           <Grid xs={12}>
             <Grid.Container gap={1}>
-              <Grid xs={12}>
-                <Text small>Nombre</Text>
-              </Grid>
-              <Grid xs={12}>
-                <Input
-                  fullWidth
-                  required
-                  id='name'
-                  name='name'
-                  label='Nombre de la foto'
-                  placeholder='Ingrese un nombre para la foto'
-                />
-              </Grid>
-              <Grid xs={12}>
-                <Text small>Descripción</Text>
-              </Grid>
-              <Grid xs={12}>
-                <Input
-                  fullWidth
-                  required
-                  id='description'
-                  name='description'
-                  label='Descripción de la foto'
-                  placeholder='Ingrese una descripción para la foto'
-                />
-              </Grid>
               <Grid xs={12}>
                 <Text small>Foto</Text>
               </Grid>
@@ -133,7 +83,10 @@ function UploadPhotoPage() {
                 </Button>
               </Grid>
               <Grid xs={12} sm={6}>
-                <Button type='submit'>Subir foto</Button>
+                <Button type='submit'>Extraer texto</Button>
+              </Grid>
+              <Grid xs={12} style={{ marginTop: 30 }}>
+                <Text>{extractedText}</Text>
               </Grid>
             </Grid.Container>
           </Grid>
@@ -143,4 +96,4 @@ function UploadPhotoPage() {
   )
 }
 
-export default UploadPhotoPage
+export default ExtractPhotoPage

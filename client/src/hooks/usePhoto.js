@@ -30,7 +30,7 @@ function usePhoto(initialPhoto) {
 
     const photoInput = document.createElement('input')
     photoInput.type = 'file'
-    photoInput.accept = 'image/jpeg'
+    photoInput.accept = 'image/png'
     photoInput.click()
     photoInput.onchange = () => {
       const file = photoInput.files[0]

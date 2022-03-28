@@ -21,3 +21,5 @@ storage-IA/testing/
 storage-IA/python/.env
 
 pythonServer/.env
+
+node_modules

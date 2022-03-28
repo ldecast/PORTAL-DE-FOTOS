@@ -221,7 +221,7 @@ Endpoint para utilización de chatbot.
 #### Retorno
 ```js
 {
-  "data": string[] | Error,
+  "data": string | Error,
   "status"
 }
 ```

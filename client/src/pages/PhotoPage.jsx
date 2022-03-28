@@ -4,7 +4,6 @@ import { useAtom } from 'jotai'
 
 import Photo from '@/components/Photo'
 import { userAtom } from '@/state'
-import css from '@/styles/PhotosPage.module.css'
 import Select from '@/components/Select'
 import { languages, languageCodes } from '@/constants/LANG'
 import { translateText } from '@/services/variousServices'
@@ -31,14 +30,9 @@ function PhotoPage({ url }) {
   }
 
   return (
-    <Grid.Container
-      gap={3}
-      alignContent='center'
-      className={css.base}
-      style={{ height: '100%' }}
-    >
+    <Grid.Container gap={3} alignContent='center' style={{ height: '100%' }}>
       <Grid xs={5} md={12}>
-        <Grid.Container gap={2} className={css.base}>
+        <Grid.Container gap={2}>
           <Grid xs={12}>
             <Photo {...photo} />
           </Grid>
