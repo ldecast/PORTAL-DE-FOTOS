@@ -268,7 +268,7 @@ def translate():
 def text():
     rawdata = request.get_json()
     data = rawdata['data']
-    res = extractText(data)
+    res = extractText((bytes)data)
     if res is None:
         return jsonify({'data': 'Ocurrio un error al traducir','status':401})
     return jsonify({'data': res, 'status':200})
@@ -281,6 +281,7 @@ def chat():
     return jsonify({'data':data,'status':200})
 
 if __name__=='__main__':
+
     from waitress import serve
     conection = connect_AWS_Services()
     print(conection)

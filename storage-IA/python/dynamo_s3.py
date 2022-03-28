@@ -273,3 +273,8 @@ def deletePhoto(username: str, URL_photo: str) -> bool:
         Key=key
     )
     return True
+
+
+#UTILIZACION DE CHAT
+def chatbot(text: str):
+    client_s3.recognize_text()
