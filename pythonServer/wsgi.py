@@ -277,6 +277,7 @@ def text():
 def chat():
     rawdata = request.get_json()
     data = rawdata['data']
+    print('accediendo a data')
     return jsonify({'data':data,'status':200})
 
 if __name__=='__main__':
