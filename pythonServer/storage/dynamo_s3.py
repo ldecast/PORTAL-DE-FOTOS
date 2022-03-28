@@ -386,6 +386,29 @@ def getPhotoLabels(b64_decode: bytes):
         labels.append(label['Name'])
     print(labels)
     return labels
+
+# EXTRAER TEXTO DE UNA FOTO
+def extractText(b64_decode: bytes):
+    image = {'Bytes': b64_decode}
+    response = client_rekognition.detect_text(
+        Image=image
+    )
+    textDetections = response['TextDetections']
+    text = ''
+    for detection in textDetections:
+        if detection['Type'] == 'LINE':
+            text += detection['DetectedText'] + '\n'
+        elif detection['Type'] == 'WORD' and not 'ParentId' in detection:
+            text += detection['DetectedText'] + ' '
+        # print('Detected text:' + detection['DetectedText'])
+        # print('Confidence: ' + "{:.2f}".format(detection['Confidence']) + "%")
+        # print('Id: {}'.format(detection['Id']))
+        # if 'ParentId' in detection:
+        #     print('Parent Id: {}'.format(detection['ParentId']))
+        # print('Type:' + detection['Type'])
+        # print()
+    print('Detected text:\n' + text)
+    return text    
 # def tags(photo):
 #     return getTagsProfilePhoto(photo,client_rekognition)
 

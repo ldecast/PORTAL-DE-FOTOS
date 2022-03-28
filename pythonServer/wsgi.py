@@ -264,6 +264,15 @@ def translate():
         return jsonify({'data': 'Ocurrio un error al traducir', 'status': 401})
     return jsonify({'data': {"text":res}, 'status': 200})
 
+@app.route('/text',methods=['POST'])
+def text():
+    rawdata = request.get_json()
+    data = rawdata['data']
+    res = extractText(data)
+    if res is None:
+        return jsonify({'data': 'Ocurrio un error al traducir','status':401})
+    return jsonify({'data': res, 'status':200})
+
 if __name__=='__main__':
     from waitress import serve
     conection = connect_AWS_Services()
