@@ -32,7 +32,14 @@ function HomePage() {
       <Grid xs={12}>
         <Grid.Container gap={2}>
           <Grid xs={4} className={css.photo}>
-            <Photo {...photo} />
+            <Grid.Container gap={1}>
+              <Grid xs={12} className={css.photo}>
+                <Photo {...photo} />
+              </Grid>
+              <Grid xs={12} className={css.photo} style={{ justifyContent: 'center' }}>
+                {photo?.tags?.join(', ')}
+              </Grid>
+            </Grid.Container>
           </Grid>
           <Grid xs={8}>
             <Grid.Container gap={2}>
