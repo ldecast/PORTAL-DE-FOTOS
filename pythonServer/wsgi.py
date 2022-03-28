@@ -276,9 +276,11 @@ def text():
 @app.route('/chat',methods=['POST'])
 def chat():
     rawdata = request.get_json()
+    print(rawdata)
     data = rawdata['data']
+    res = chatbot(data)['messages'][0]['content']
     print('accediendo a data')
-    return jsonify({'data':data,'status':200})
+    return jsonify({'data':res,'status':200})
 
 if __name__=='__main__':
     from waitress import serve

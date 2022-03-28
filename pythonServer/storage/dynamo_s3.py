@@ -22,6 +22,7 @@ client_dynamodb = None
 client_s3 = None
 client_rekognition = None
 client_translate = None
+client_lex = None
 
 table_users = {
     'Name': 'Users',
@@ -40,6 +41,7 @@ def connect_AWS_Services() -> bool:
         global client_s3
         global client_rekognition
         global client_translate
+        global client_lex
         # CONECTAR A LA BASE DE DATOS
         client_dynamodb = boto3.client('dynamodb',
                                        aws_access_key_id=ACCESS_KEY_ID,
@@ -61,6 +63,9 @@ def connect_AWS_Services() -> bool:
                                         aws_access_key_id=ACCESS_KEY_ID,
                                         aws_secret_access_key=SECRET_ACCESS_KEY,
                                         region_name=REGION_NAME)
+        
+        #CONECTAR CON LEX
+        client_lex = boto3.client('lexv2-runtime')
     except:
         print("Something went wrong connecting with AWS Services")
         return False
@@ -405,6 +410,15 @@ def extractText(b64_str: str) -> str:
 # def tags(photo):
 #     return getTagsProfilePhoto(photo,client_rekognition)
 
+#UTILIZACION DE CHAT
+def chatbot(text: str):
+    response = client_lex.recognize_text(
+        botId='FERO3VKJD0',
+        botAliasId='TSTALIASID',
+        localeId='es_419',
+        sessionId="test_session",
+        text=text)
+    return response
 
 # if __name__ == '__main__':
 #     if connectDynamoDB():
