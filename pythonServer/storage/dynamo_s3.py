@@ -65,7 +65,9 @@ def connect_AWS_Services() -> bool:
                                         region_name=REGION_NAME)
         
         #CONECTAR CON LEX
-        client_lex = boto3.client('lexv2-runtime')
+        client_lex = boto3.client('lexv2-runtime',aws_access_key_id=ACCESS_KEY_ID,
+                                        aws_secret_access_key=SECRET_ACCESS_KEY,
+                                        region_name=REGION_NAME)
     except:
         print("Something went wrong connecting with AWS Services")
         return False
