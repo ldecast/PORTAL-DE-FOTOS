@@ -46,7 +46,9 @@ function PhotoPage({ url }) {
       </Grid>
       <Grid xs={7} md={12} style={{ marginTop: 20 }}>
         <p>{description}</p>
-        <i>{photo.tags?.join(', ')}</i>
+      </Grid>
+      <Grid xs={12} style={{ marginTop: 20 }}>
+        <p>{photo.tags?.join(', ')}</p>
       </Grid>
     </Grid.Container>
   )
